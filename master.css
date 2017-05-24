@@ -1,0 +1,30 @@
+*{
+    margin: 0;
+    padding: 0;
+    overflow:hidden;
+}
+
+body {
+    background:#333;
+}
+
+#canvas {
+    width:800px;
+    height:600px;
+    margin:0 auto;
+    display:block;
+}
+
+#pauseOnDrawing-element{
+    color: #fff;
+    right: 100px;
+    top: 100px;
+    position: absolute;
+}
+
+#pauseGame-element{
+    color: #fff;
+    right: 100px;
+    top: 130px;
+    position: absolute;
+}

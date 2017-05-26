@@ -48,6 +48,7 @@ var Fluid = function(){
 
 };
 
+
 Fluid.prototype.process_image = function() {
     var that = this;
 
@@ -61,6 +62,16 @@ Fluid.prototype.process_image = function() {
     that.ctx.putImageData(imageData, 0, 0);
 };
 
+/**
+ * Delete particle outside canvas
+ * @param obj
+ */
+Fluid.prototype.destroyParticle = function(obj) {
+    var that = this;
+
+    that.particles.splice(that.particles.indexOf(obj), 1);
+    that.num_particles = that.particles.length;
+};
 
 Fluid.prototype.run = function () {
     var that = fluid.context;
@@ -75,11 +86,19 @@ Fluid.prototype.run = function () {
 
     var i = that.num_particles;
     if((!settings.pauseOnDrawing && that.mouseDrawing) || !that.mouseDrawing) {
-        while(i--) that.particles[i].first_process();
+        while(i--) {
+            if(that.particles[i]){
+                that.particles[i].first_process();
+            }
+        }
     }
 
     i = that.num_particles;
-    while (i--) that.particles[i].second_process();
+    while (i--) {
+        if(that.particles[i]) {
+            that.particles[i].second_process();
+        }
+    }
 
 
     fluid.process_image();

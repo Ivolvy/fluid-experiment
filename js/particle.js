@@ -84,11 +84,42 @@ Particle.prototype.second_process = function () {
         this.y -= dy;
     }
 
-    if (this.x < fluid.limit) this.x = fluid.limit;
-    else if (this.x > fluid.width - fluid.limit) this.x = fluid.width - fluid.limit;
 
-    if (this.y < fluid.limit) this.y = fluid.limit;
-    else if (this.y > fluid.height - fluid.limit) this.y = fluid.height - fluid.limit;
+    //Check if the particles are on the borders of the canvas
+    if (this.x < fluid.limit) {
+        if (settings.outflow) {
+            if(this.x < 0) {
+                fluid.destroyParticle(this);
+            }
+        } else{
+            this.x = fluid.limit;
+        }
+    } else if (this.x > fluid.width - fluid.limit) {
+        if (settings.outflow) {
+            if(this.x > fluid.width) { //Useful to not make the particles disappears instantly at extremes
+                fluid.destroyParticle(this);
+            }
+        } else{
+            this.x = fluid.width - fluid.limit;
+        }
+    }
+
+    if (this.y < fluid.limit) {
+        if (settings.outflow) {
+            fluid.destroyParticle(this);
+        } else{
+            this.y = fluid.limit;
+        }
+    } else if (this.y > fluid.height - fluid.limit) {
+        if (settings.outflow) {
+            if(this.y > fluid.height){
+                fluid.destroyParticle(this);
+            }
+        } else{
+            this.y = fluid.height - fluid.limit;
+        }
+    }
+
 
     this.draw();
 };

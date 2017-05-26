@@ -28,3 +28,10 @@ body {
     top: 130px;
     position: absolute;
 }
+
+#outflow-element{
+    color: #fff;
+    right: 100px;
+    top: 160px;
+    position: absolute;
+}

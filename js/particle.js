@@ -1,11 +1,11 @@
 /*Base particles script get from dissimulate on codepen*/
 
-var Particle = function(type, x, y){
+var Particle = function(type, x, y, px, py){
     this.type = type;
     this.x = x;
     this.y = y;
-    this.px = x;
-    this.py = y;
+    this.px = px ? px : x;
+    this.py = py ? py : y;
     this.vx = 0;
     this.vy = 0;
 };
@@ -20,9 +20,9 @@ Particle.prototype.first_process = function () {
     this.vx = this.x - this.px;
     this.vy = this.y - this.py;
 
-    if (fluid.mouse.down) {
-
-    }
+    /*if (mouse.down) {
+        //here useful to interact with the fluid with mouse?
+    }*/
 
     this.vx += settings.GRAVITY_X;
     this.vy += settings.GRAVITY_Y;

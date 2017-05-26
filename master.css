@@ -35,3 +35,21 @@ body {
     top: 160px;
     position: absolute;
 }
+
+#inflow-element{
+    color: #fff;
+    right: 100px;
+    top: 190px;
+    position: absolute;
+}
+
+#water-button{
+    right: 100px;
+    top: 220px;
+    position: absolute;
+}
+#fire-button{
+    right: 100px;
+    top: 250px;
+    position: absolute;
+}

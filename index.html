@@ -22,12 +22,27 @@
   <input type="checkbox" name="checkbox" value="value">
   Outflow
 </label>
+<label id="inflow-element">
+  <input type="checkbox" name="checkbox" value="value">
+  Inflow
+</label>
+
+<button id="water-button"type="button">Water</button>
+<button id="fire-button" type="button">Fire</button>
+
 
 </body>
 
+<script src="js/element.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/mouse.js"></script>
 <script src="js/particle.js"></script>
 <script src="js/app.js"></script>
 <script src="js/events.js"></script>
+
+
+<script>
+  fluid.init('canvas', 800, 600);
+</script>
 
 </html>

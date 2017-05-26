@@ -30,22 +30,6 @@ var Fluid = function(){
     this.limit = this.radius * 0.66;
     this.textures = [];
     this.num_particles = 0;
-    this.mouseDrawing = false;
-
-    this.previousX = 0;
-    this.previousY = 0;
-    this.outXposition = 0;
-    this.outYposition = 0;
-
-
-    this.mouse = {
-        down: false,
-        out: false,
-        x: 0,
-        y: 0
-    };
-
-
 };
 
 
@@ -60,6 +44,27 @@ Fluid.prototype.process_image = function() {
     }
 
     that.ctx.putImageData(imageData, 0, 0);
+};
+
+/**
+ * Add particle
+ * @param x
+ * @param y
+ * @param px
+ * @param py
+ */
+Fluid.prototype.addParticle = function(x, y, px, py) {
+    var that = this;
+    that.particles.push(
+        new Particle(
+            0,
+            x,
+            y,
+            px,
+            py
+        )
+    );
+    that.num_particles = that.particles.length;
 };
 
 /**
@@ -85,7 +90,7 @@ Fluid.prototype.run = function () {
 
 
     var i = that.num_particles;
-    if((!settings.pauseOnDrawing && that.mouseDrawing) || !that.mouseDrawing) {
+    if((!settings.pauseOnDrawing && mouse.mouseDrawing) || !mouse.mouseDrawing) {
         while(i--) {
             if(that.particles[i]){
                 that.particles[i].first_process();
@@ -104,187 +109,25 @@ Fluid.prototype.run = function () {
     fluid.process_image();
 
 
-
-    if(that.mouse.down) {
-
-        var xDiff, yDiff;
-        var increaseValueX, increaseValueY;
-
-        var currentX = that.mouse.x;
-        var currentY = that.mouse.y;
-
-        if(that.previousX > currentX){ //Right to left
-            xDiff = that.previousX - currentX;
-            increaseValueX = false;
-        }
-        if(that.previousX < currentX ){ //Left to right
-            xDiff = currentX - that.previousX;
-            increaseValueX = true;
-        }
+    //Added infinite particles at left corner
+    if(settings.inflow){
+        fluid.addParticle(fluid.limit, fluid.limit, fluid.limit-4); //-4 to give an impulse
+    }
 
 
-        if(that.previousY > currentY){ //Bottom to Top
-            yDiff = that.previousY - currentY;
-            increaseValueY = false;
-        }
-        if(that.previousY < currentY ){ //Top to bottom
-            yDiff = currentY - that.previousY;
-            increaseValueY = true;
-        }
+    //We draw particles between each point we get from mouse - in order to fill lines proportionally
+    if(mouse.down) {
+        mouse.process();
 
-        var finalX = 0;
-        var finalY = 0;
-
-        if(xDiff > 10){
-            //console.log("      X     ");
-            if(increaseValueX){
-                for (var a = that.previousX; a < currentX; a+=5){ //For each position until current mouse x
-                    if(that.mouse.out){
-                        if(that.outXposition < that.width){ //if mouse go out of the canvas
-                            currentX = 0;
-                        }
-                    }
-
-                    if(increaseValueY && that.previousY < currentY){
-                        that.previousY+=5;
-                    } else if(!increaseValueY && that.previousY > currentY){
-                        that.previousY-=5;
-                    }
-
-
-                    //Create particles on mouse position
-                    that.particles.push(
-                        new Particle(
-                            0,
-                            a,
-                            that.previousY
-                        )
-                    );
-                    finalX = a; //last position
-                    finalY = that.previousY; //last position
-                }
-            } else{
-                for (var a = that.previousX; a > currentX; a-=5){
-                    if(that.mouse.out){
-                        if(that.outXposition > that.width){
-                            currentX = that.width;
-                        }
-                    }
-
-
-                    if(increaseValueY && that.previousY < currentY){
-                        that.previousY+=5;
-                    } else if(!increaseValueY && that.previousY > currentY){
-                        that.previousY-=5;
-                    }
-
-                    //Create particles on mouse position
-                    that.particles.push(
-                        new Particle(
-                            0,
-                            a,
-                            that.previousY
-                        )
-                    );
-
-                    finalX = a;
-                    finalY = that.previousY; //last position
-                }
-            }
-
-            that.previousX = finalX;
-            that.previousY = finalY;
-
-        }
-        else if(yDiff > 10){
-            //console.log("      Y     ");
-            if(increaseValueY){
-                for (var a = that.previousY; a < currentY; a+=5){ //For each position until current mouse x
-                    if(that.mouse.out){
-                        if(that.outYposition < that.height){ //if mouse go out of the canvas
-                            currentY = 0;
-                        }
-                    }
-
-
-                    if(increaseValueX && that.previousX < currentX){
-                        that.previousX+=5;
-                    } else if(!increaseValueX && that.previousX > currentX){
-                        that.previousX-=5;
-                    }
-
-                    //Create particles on mouse position
-                    that.particles.push(
-                        new Particle(
-                            0,
-                            that.previousX,
-                            a
-                        )
-                    );
-                    finalX = that.previousX; //last position
-                    finalY = a; //last position
-                }
-            } else{
-                for (var a = that.previousY; a > currentY; a-=5){
-                    if(that.mouse.out){
-                        if(that.outYposition > that.height){
-                            currentY = that.height;
-                        }
-                    }
-
-
-                    if(increaseValueX && that.previousX < currentX){
-                        that.previousX+=5;
-                    } else if(!increaseValueX && that.previousX > currentX){
-                        that.previousX-=5;
-                    }
-
-
-                    //Create particles on mouse position
-                    that.particles.push(
-                        new Particle(
-                            0,
-                            currentX,
-                            a
-                        )
-                    );
-
-                    finalX = that.previousX; //last position
-                    finalY = a;
-                }
-            }
-
-            that.previousX = finalX;
-            that.previousY = finalY;
-        }
-        else{
-
-            if(!that.mouse.out){
-
-                //Create particles on mouse position
-                that.particles.push(
-                    new Particle(
-                        0,
-                        that.mouse.x,
-                        that.mouse.y
-                    )
-                );
-                that.previousX = that.mouse.x;
-                that.previousY = that.mouse.y;
-            }
-        }
-
-
-        that.num_particles = that.particles.length; //Update length
     } else{
-        that.previousX = that.mouse.x;
-        that.previousY = that.mouse.y;
+        mouse.previousX = mouse.x;
+        mouse.previousY = mouse.y;
     }
 
     //console.log(new Date().getTime() - time);
 
     if(that.play && !settings.pauseGame) {
-        requestAnimFrame(fluid.run, fluid.ct);
+        requestAnimFrame(fluid.run);
     }
 };
 
@@ -340,35 +183,35 @@ Fluid.prototype.init = function(canvas, w, h){
     }
 
     canvas.onmousedown = function(e) {
-        that.mouse.down = true;
-        that.mouseDrawing = true;
+        mouse.down = true;
+        mouse.mouseDrawing = true;
         return false;
     };
 
     document.onmouseup = function(e) { //on document 'cause we want to release fluid even if we are out canvas
-        that.mouse.down = false;
-        that.mouseDrawing = false;
+        mouse.down = false;
+        mouse.mouseDrawing = false;
         return false;
     };
 
     canvas.onmousemove = function(e) {
         var rect = canvas.getBoundingClientRect();
-        that.mouse.x = e.clientX - rect.left;
-        that.mouse.y = e.clientY - rect.top;
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
         return false;
     };
 
     //If we are out or over the canvas
     canvas.onmouseout = function(e){
-        that.outXposition = e.pageX - this.offsetLeft; //calculate the out x position of the mouse
-        that.outYposition = e.pageY - this.offsetTop;
+        mouse.outXposition = e.pageX - this.offsetLeft; //calculate the out x position of the mouse
+        mouse.outYposition = e.pageY - this.offsetTop;
 
-        that.mouse.out = true;
+        mouse.out = true;
 
     };
 
     canvas.onmouseover = function(e){
-        that.mouse.out = false;
+        mouse.out = false;
     };
 
     that.num_x = Math.round(that.width / that.spacing) + 1;
@@ -414,6 +257,6 @@ Fluid.prototype.resume = function(){
 
 
 var fluid = new Fluid();
-fluid.init('canvas', 800, 600);
+
 
 

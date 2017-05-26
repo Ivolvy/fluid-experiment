@@ -12,6 +12,7 @@ Settings.prototype.init = function(){
     this.pauseOnDrawing = true;
     this.pauseGame = false;
     this.outflow = false;
+    this.inflow = false;
 
 };
 

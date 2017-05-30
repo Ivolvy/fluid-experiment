@@ -26,9 +26,7 @@ var Fluid = function(){
     this.threshold = 220;
     this.play = false;
     this.spacing = 45;
-    this.radius = 30;
-    this.limit = this.radius * 0.66;
-    this.textures = [];
+    this.limit = element.radius * 0.66;
     this.num_particles = 0;
 };
 
@@ -53,11 +51,11 @@ Fluid.prototype.process_image = function() {
  * @param px
  * @param py
  */
-Fluid.prototype.addParticle = function(x, y, px, py) {
+Fluid.prototype.addParticle = function(elementType,x, y, px, py) {
     var that = this;
     that.particles.push(
         new Particle(
-            0,
+            elementType,
             x,
             y,
             px,
@@ -138,7 +136,6 @@ Fluid.prototype.init = function(canvas, w, h){
 
     that.particles = [];
     that.grid      = [];
-    that.textures  = [];
 
     var canvas 	  = document.getElementById(canvas);
     that.ctx   	      = canvas.getContext('2d');
@@ -152,36 +149,48 @@ Fluid.prototype.init = function(canvas, w, h){
     meta_canvas.height = that.height;
     that.meta_ctx           = meta_canvas.getContext("2d");
 
-    for(var i = 0; i < settings.GROUPS.length; i++) {
 
-        var color;
+    element.createElement(type.water);
 
-        color = settings.COLOR;
 
-        that.textures[i] = document.createElement("canvas");
-        that.textures[i].width  = that.radius * 2;
-        that.textures[i].height = that.radius * 2;
-        var nctx = that.textures[i].getContext("2d");
+    that.num_x = Math.round(that.width / that.spacing) + 1;
+    that.num_y = Math.round(that.height / that.spacing) + 1;
 
-        var grad = nctx.createRadialGradient(
-            that.radius,
-            that.radius,
-            1, //Inner circle that.radius
-            that.radius,
-            that.radius,
-            that.radius
-        );
 
-        grad.addColorStop(0, color + ',1)'); //gradient coloring
-        grad.addColorStop(1, color + ',0)');
-        nctx.fillStyle = grad;
-
-        nctx.beginPath();
-        nctx.arc(that.radius, that.radius, that.radius, 0, Math.PI * 2, true);
-        nctx.closePath();
-        nctx.fill();
+    for (var i = 0; i < that.num_x * that.num_y; i++) {
+        that.grid[i] = {
+            length: 0,
+            close: []
+        }
     }
 
+    for (var i = 0; i < settings.GROUPS.length; i++ ) {
+        for (var k = 0; k < settings.GROUPS[i]; k++ ) {
+            that.particles.push(
+                new Particle(
+                    i,
+                    element.radius + Math.random() * (that.width - element.radius * 2),
+                    element.radius + Math.random() * (that.height - element.radius * 2)
+                )
+            );
+
+        }
+    }
+
+
+    that.num_particles = that.particles.length;
+
+    that.play = true;
+
+    fluid.initEvents(canvas);
+    fluid.run(this);
+};
+
+/**
+ * Init events on mouse
+ * @param canvas
+ */
+Fluid.prototype.initEvents = function(canvas){
     canvas.onmousedown = function(e) {
         mouse.down = true;
         mouse.mouseDrawing = true;
@@ -213,36 +222,6 @@ Fluid.prototype.init = function(canvas, w, h){
     canvas.onmouseover = function(e){
         mouse.out = false;
     };
-
-    that.num_x = Math.round(that.width / that.spacing) + 1;
-    that.num_y = Math.round(that.height / that.spacing) + 1;
-
-
-    for (var i = 0; i < that.num_x * that.num_y; i++) {
-        that.grid[i] = {
-            length: 0,
-            close: []
-        }
-    }
-
-    for (var i = 0; i < settings.GROUPS.length; i++ ) {
-        for (var k = 0; k < settings.GROUPS[i]; k++ ) {
-            that.particles.push(
-                new Particle(
-                    i,
-                    that.radius + Math.random() * (that.width - that.radius * 2),
-                    that.radius + Math.random() * (that.height - that.radius * 2)
-                )
-            );
-
-        }
-    }
-
-
-    that.num_particles = that.particles.length;
-
-    that.play = true;
-    fluid.run(this);
 };
 
 

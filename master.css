@@ -47,9 +47,21 @@ body {
     right: 100px;
     top: 220px;
     position: absolute;
+
+    outline: none;
+    /*border: none;*/
 }
 #fire-button{
     right: 100px;
     top: 250px;
     position: absolute;
+
+    outline: none;
+}
+
+#water-button.active{
+    background-color: rgba(128, 186, 247, 0.7);
+}
+#fire-button.active{
+    background-color: rgba(247, 44, 44, 0.7);
 }

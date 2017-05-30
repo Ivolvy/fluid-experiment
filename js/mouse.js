@@ -1,3 +1,7 @@
+/**
+ * Mouse events and particles drawing
+ * @constructor
+ */
 var Mouse = function(){};
 
 
@@ -72,7 +76,7 @@ Mouse.prototype.process = function(){
 
 
                 //Create particles on mouse position
-                fluid.addParticle(a, this.previousY);
+                fluid.addParticle(settings.currentElementType,a, this.previousY);
 
 
                 this.finalX = a; //last position
@@ -94,7 +98,7 @@ Mouse.prototype.process = function(){
                 }
 
                 //Create particles on mouse position
-                fluid.addParticle(a, this.previousY);
+                fluid.addParticle(settings.currentElementType,a, this.previousY);
 
 
                 this.finalX = a;
@@ -123,7 +127,7 @@ Mouse.prototype.process = function(){
                 }
 
                 //Create particles on mouse position
-                fluid.addParticle(this.previousX, a);
+                fluid.addParticle(settings.currentElementType,this.previousX, a);
 
                 this.finalX = this.previousX; //last position
                 this.finalY = a; //last position
@@ -145,7 +149,7 @@ Mouse.prototype.process = function(){
 
 
                 //Create particles on mouse position
-                fluid.addParticle(this.currentX, a);
+                fluid.addParticle(settings.currentElementType,this.currentX, a);
 
                 this.finalX = this.previousX; //last position
                 this.finalY = a;
@@ -160,7 +164,7 @@ Mouse.prototype.process = function(){
         if(!this.out){
 
             //Create particles on mouse position
-            fluid.addParticle(this.x, this.y);
+            fluid.addParticle(settings.currentElementType,this.x, this.y);
 
             this.previousX = this.x;
             this.previousY = this.y;

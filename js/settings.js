@@ -1,3 +1,7 @@
+/**
+ * All the settings
+ * @constructor
+ */
 var Settings = function(){};
 
 
@@ -5,14 +9,14 @@ Settings.prototype.init = function(){
 
     this.GRAVITY_X     = 0;
     this.GRAVITY_Y     = 1;
-    this.GROUPS        = [5]; //Nb of particles on start
-    this.COLOR = ['rgba(128, 186, 247']; //Particles' color
+    this.GROUPS        = [5]; //Instantiate particles' tab - Nb of particles on start
+    this.currentElementType = 0; //Particles' color - current element type when drawing
 
 
-    this.pauseOnDrawing = true;
-    this.pauseGame = false;
-    this.outflow = false;
-    this.inflow = false;
+    this.pauseOnDrawing = true; //Pause the game when we draw
+    this.pauseGame = false; //Pause all the game
+    this.outflow = false; //Let fluid go out of the canvas
+    this.inflow = false; //Create infinite water fluid at left corner
 
 };
 

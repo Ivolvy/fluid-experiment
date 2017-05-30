@@ -1,14 +1,22 @@
 @import 'variables';
+@import 'utilities';
 
 
 *{
     margin: 0;
     padding: 0;
     overflow:hidden;
+
+    font-family: 'Lato', sans-serif;
 }
 
 body {
     background:#333;
+}
+
+input{
+    outline: none;
+    border: none;
 }
 
 #canvas {
@@ -18,55 +26,46 @@ body {
     display:block;
 }
 
-#pauseOnDrawing-element{
-    color: #fff;
-    right: 100px;
-    top: 100px;
+
+
+#toolbar{
     position: absolute;
+    top: 50px;
+    right: 50px;
+    background: #1a1a1a;
+    border: 3px solid #2c2c2c;
+    height: 500px;
+    width: 300px;
 }
 
-#pauseGame-element{
+
+.element{
+    margin-top: 10px;
+    margin-left: 10px;
     color: #fff;
-    right: 100px;
-    top: 130px;
-    position: absolute;
 }
 
-#outflow-element{
-    color: #fff;
-    right: 100px;
-    top: 160px;
-    position: absolute;
-}
+#buttons{
+    margin-top: 40px;
+    margin-left: 5px;
 
-#inflow-element{
-    color: #fff;
-    right: 100px;
-    top: 190px;
-    position: absolute;
-}
+    .button{
+        margin-left: 5px;
+    }
 
-#water-button{
-    right: 100px;
-    top: 220px;
-    position: absolute;
+    #water-button{
+        right: 100px;
+        top: 220px;
 
-    outline: none;
-    /*border: none;*/
+        @include element-button($water-color);
+    }
+    #fire-button{
+        right: 100px;
+        top: 250px;
 
-    &.active{
-        background-color: $water-color;
+        @include element-button($fire-color);
     }
 }
-#fire-button{
-    right: 100px;
-    top: 250px;
-    position: absolute;
 
-    outline: none;
 
-    &.active{
-        background-color: $fire-color;
-    }
-}
 

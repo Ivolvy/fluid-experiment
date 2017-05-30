@@ -9,7 +9,7 @@ Settings.prototype.init = function(){
 
     this.GRAVITY_X     = 0;
     this.GRAVITY_Y     = 1;
-    this.GROUPS        = [5]; //Instantiate particles' tab - Nb of particles on start
+    this.GROUPS        = []; //Instantiate particles' tab - Nb of particles on start
     this.currentElementTypeId = 0; //Particles' color - current element type when drawing
 
 

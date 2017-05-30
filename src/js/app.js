@@ -201,6 +201,10 @@ Fluid.prototype.initEvents = function(canvas){
     document.onmouseup = function(e) { //on document 'cause we want to release fluid even if we are out canvas
         mouse.down = false;
         mouse.mouseDrawing = false;
+
+        //reset mouse positions
+        mouse.previousX = 0;
+        mouse.previousY = 0;
         return false;
     };
 
@@ -217,7 +221,6 @@ Fluid.prototype.initEvents = function(canvas){
         mouse.outYposition = e.pageY - this.offsetTop;
 
         mouse.out = true;
-
     };
 
     canvas.onmouseover = function(e){

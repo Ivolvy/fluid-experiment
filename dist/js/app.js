@@ -63,7 +63,7 @@ Fluid.prototype.run = function() {
     }
     fluid.process_image();
     if (settings.inflow) {
-        fluid.addParticle(fluid.limit, fluid.limit, fluid.limit - 4);
+        fluid.addParticle(type.water.id, fluid.limit, fluid.limit, fluid.limit - 4);
     }
     if (mouse.down) {
         mouse.process();
@@ -119,6 +119,8 @@ Fluid.prototype.initEvents = function(t) {
     document.onmouseup = function(t) {
         mouse.down = false;
         mouse.mouseDrawing = false;
+        mouse.previousX = 0;
+        mouse.previousY = 0;
         return false;
     };
     t.onmousemove = function(i) {
@@ -189,19 +191,19 @@ element.init();
 var Events = function() {};
 
 Events.prototype.init = function() {
-    document.getElementById("pauseOnDrawing-element").getElementsByTagName("input")[0].onclick = function(t) {
+    document.getElementById("pauseOnDrawing").getElementsByTagName("input")[0].onclick = function(t) {
         settings.pauseOnDrawing = !settings.pauseOnDrawing;
     };
-    document.getElementById("pauseGame-element").getElementsByTagName("input")[0].onclick = function(t) {
+    document.getElementById("pauseGame").getElementsByTagName("input")[0].onclick = function(t) {
         settings.pauseGame = !settings.pauseGame;
         if (!settings.pauseGame) {
             fluid.resume();
         }
     };
-    document.getElementById("outflow-element").getElementsByTagName("input")[0].onclick = function(t) {
+    document.getElementById("outflow").getElementsByTagName("input")[0].onclick = function(t) {
         settings.outflow = !settings.outflow;
     };
-    document.getElementById("inflow-element").getElementsByTagName("input")[0].onclick = function(t) {
+    document.getElementById("inflow").getElementsByTagName("input")[0].onclick = function(t) {
         settings.inflow = !settings.inflow;
     };
     document.getElementById("water-button").onclick = function(t) {
@@ -459,7 +461,7 @@ var Settings = function() {};
 Settings.prototype.init = function() {
     this.GRAVITY_X = 0;
     this.GRAVITY_Y = 1;
-    this.GROUPS = [ 5 ];
+    this.GROUPS = [];
     this.currentElementTypeId = 0;
     this.pauseOnDrawing = true;
     this.pauseGame = false;

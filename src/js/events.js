@@ -6,17 +6,17 @@ var Events = function(){};
 
 
 Events.prototype.init = function(){
-    document.getElementById('pauseOnDrawing-element').getElementsByTagName('input')[0].onclick = function(e) {
+    document.getElementById('pauseOnDrawing').getElementsByTagName('input')[0].onclick = function(e) {
         settings.pauseOnDrawing = !settings.pauseOnDrawing;
     };
-    document.getElementById('pauseGame-element').getElementsByTagName('input')[0].onclick = function(e) {
+    document.getElementById('pauseGame').getElementsByTagName('input')[0].onclick = function(e) {
         settings.pauseGame = !settings.pauseGame;
         if(!settings.pauseGame){fluid.resume();}
     };
-    document.getElementById('outflow-element').getElementsByTagName('input')[0].onclick = function(e) {
+    document.getElementById('outflow').getElementsByTagName('input')[0].onclick = function(e) {
         settings.outflow = !settings.outflow;
     };
-    document.getElementById('inflow-element').getElementsByTagName('input')[0].onclick = function(e) {
+    document.getElementById('inflow').getElementsByTagName('input')[0].onclick = function(e) {
         settings.inflow = !settings.inflow;
     };
 

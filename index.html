@@ -4,31 +4,42 @@
   <meta charset="UTF-8">
   <title>Fluid experiment</title>
 
+  <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="dist/css/normalize.css">
   <link rel="stylesheet" type="text/css" href="dist/css/master.css">
 </head>
 <body>
 
 <canvas id="canvas"></canvas>
 
-<label id="pauseOnDrawing-element">
-  <input type="checkbox" name="checkbox" value="value" checked>
-  Pause on drawing
-</label>
-<label id="pauseGame-element">
-  <input type="checkbox" name="checkbox" value="value">
-  Pause Game
-</label>
-<label id="outflow-element">
-  <input type="checkbox" name="checkbox" value="value">
-  Outflow
-</label>
-<label id="inflow-element">
-  <input type="checkbox" name="checkbox" value="value">
-  Inflow
-</label>
+<div id="toolbar">
 
-<button id="water-button"type="button">Water</button>
-<button id="fire-button" type="button">Fire</button>
+  <div id="elements">
+    <div id="pauseOnDrawing" class="element">
+      <input type="checkbox" name="checkbox" value="value" checked>
+      <label>Pause on drawing</label>
+    </div>
+    <div id="pauseGame" class="element">
+      <input type="checkbox" name="checkbox" value="value">
+      <label>Pause Game</label>
+    </div>
+    <div id="outflow" class="element">
+      <input type="checkbox" name="checkbox" value="value">
+      <label>Outflow</label>
+    </div>
+    <div id="inflow" class="element">
+      <input type="checkbox" name="checkbox" value="value">
+      <label>Inflow</label>
+    </div>
+  </div>
+
+  <div id="buttons">
+    <button id="water-button" class="button" type="button">Water</button>
+    <button id="fire-button" class="button" type="button">Fire</button>
+  </div>
+
+</div>
+
 
 
 </body>

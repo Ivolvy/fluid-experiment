@@ -46,6 +46,7 @@ Fluid.prototype.process_image = function() {
 
 /**
  * Add particle
+ * @param elementType
  * @param x
  * @param y
  * @param px
@@ -109,7 +110,7 @@ Fluid.prototype.run = function () {
 
     //Added infinite particles at left corner
     if(settings.inflow){
-        fluid.addParticle(fluid.limit, fluid.limit, fluid.limit-4); //-4 to give an impulse
+        fluid.addParticle(type.water.id, fluid.limit, fluid.limit, fluid.limit-4); //-4 to give an impulse
     }
 
 

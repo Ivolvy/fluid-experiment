@@ -1,7 +1,7 @@
 /*Base particles script get from dissimulate on codepen*/
 
 var Particle = function(type, x, y, px, py){
-    this.currentElementType = type; //Type of the particle (water, fire, ...)
+    this.currentElementTypeId = type; //Type of the particle (water, fire, ...)
     this.x = x;
     this.y = y;
     this.px = px ? px : x;
@@ -73,7 +73,7 @@ Particle.prototype.second_process = function () {
         var neighbor = close[i];
 
         var press = force + force_b * neighbor.m;
-        if (this.currentElementType != neighbor.currentElementType) press *= 0.35;
+        if (this.currentElementTypeId != neighbor.currentElementTypeId) press *= 0.35;
 
         var dx = neighbor.dfx * press * 0.5; //increase rebound
         var dy = neighbor.dfy * press * 0.5;
@@ -130,7 +130,7 @@ Particle.prototype.draw = function () {
     var size = element.radius * 2;
 
     fluid.meta_ctx.drawImage(
-        element.textures[this.currentElementType], //Draw the current type of the particle (water, fire, ...)
+        element.textures[this.currentElementTypeId], //Draw the current type of the particle (water, fire, ...)
         this.x - element.radius,
         this.y - element.radius,
         size,

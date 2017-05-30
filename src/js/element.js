@@ -13,7 +13,7 @@ Element.prototype.init = function(){
 
 Element.prototype.createElement = function(elementType){
 
-    settings.currentElementType = elementType.id;
+    settings.currentElementTypeId = elementType.id;
 
     var color = elementType.color;
 
@@ -52,7 +52,7 @@ Element.prototype.setWaterElement = function(){
 };
 
 Element.prototype.setFireElement = function(){
-    settings.currentElementType = type.fire.id;
+    settings.currentElementTypeId = type.fire.id;
 
     this.createElement(type.fire);
 };

@@ -54,16 +54,13 @@ input{
     }
 
     #water-button{
-        right: 100px;
-        top: 220px;
-
         @include element-button($water-color);
     }
     #fire-button{
-        right: 100px;
-        top: 250px;
-
         @include element-button($fire-color);
+    }
+    #wall-button{
+        @include element-button($wall-color);
     }
 }
 

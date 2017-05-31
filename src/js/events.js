@@ -23,15 +23,21 @@ Events.prototype.init = function(){
 
     document.getElementById('water-button').onclick = function(e) {
         events.removeActive();
-
         this.classList.add("active");
-        element.setWaterElement();
+
+        element.createElement(type.water);
     };
     document.getElementById('fire-button').onclick = function(e) {
         events.removeActive();
-
         this.classList.add("active");
-        element.setFireElement();
+
+        element.createElement(type.fire);
+    };
+    document.getElementById('wall-button').onclick = function(e) {
+        events.removeActive();
+        this.classList.add("active");
+
+        element.createElement(type.wall);
     };
 };
 

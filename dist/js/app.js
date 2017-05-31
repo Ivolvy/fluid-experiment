@@ -158,7 +158,7 @@ Element.prototype.init = function() {
 };
 
 Element.prototype.createElement = function(t) {
-    settings.currentElementTypeId = t.id;
+    settings.elementTypeId = t.id;
     var i = t.color;
     this.newElement = document.createElement("canvas");
     this.newElement.width = this.radius * 2;
@@ -173,15 +173,6 @@ Element.prototype.createElement = function(t) {
     e.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2, true);
     e.closePath();
     e.fill();
-};
-
-Element.prototype.setWaterElement = function() {
-    this.createElement(type.water);
-};
-
-Element.prototype.setFireElement = function() {
-    settings.currentElementTypeId = type.fire.id;
-    this.createElement(type.fire);
 };
 
 var element = new Element();
@@ -209,12 +200,17 @@ Events.prototype.init = function() {
     document.getElementById("water-button").onclick = function(t) {
         events.removeActive();
         this.classList.add("active");
-        element.setWaterElement();
+        element.createElement(type.water);
     };
     document.getElementById("fire-button").onclick = function(t) {
         events.removeActive();
         this.classList.add("active");
-        element.setFireElement();
+        element.createElement(type.fire);
+    };
+    document.getElementById("wall-button").onclick = function(t) {
+        events.removeActive();
+        this.classList.add("active");
+        element.createElement(type.wall);
     };
 };
 
@@ -283,7 +279,7 @@ Mouse.prototype.process = function() {
                 } else if (!this.increaseValueY && this.previousY > this.currentY) {
                     this.previousY -= 5;
                 }
-                fluid.addParticle(settings.currentElementTypeId, t, this.previousY);
+                fluid.addParticle(settings.elementTypeId, t, this.previousY);
                 this.finalX = t;
                 this.finalY = this.previousY;
             }
@@ -299,7 +295,7 @@ Mouse.prototype.process = function() {
                 } else if (!this.increaseValueY && this.previousY > this.currentY) {
                     this.previousY -= 5;
                 }
-                fluid.addParticle(settings.currentElementTypeId, t, this.previousY);
+                fluid.addParticle(settings.elementTypeId, t, this.previousY);
                 this.finalX = t;
                 this.finalY = this.previousY;
             }
@@ -319,7 +315,7 @@ Mouse.prototype.process = function() {
                 } else if (!this.increaseValueX && this.previousX > this.currentX) {
                     this.previousX -= 5;
                 }
-                fluid.addParticle(settings.currentElementTypeId, this.previousX, t);
+                fluid.addParticle(settings.elementTypeId, this.previousX, t);
                 this.finalX = this.previousX;
                 this.finalY = t;
             }
@@ -335,7 +331,7 @@ Mouse.prototype.process = function() {
                 } else if (!this.increaseValueX && this.previousX > this.currentX) {
                     this.previousX -= 5;
                 }
-                fluid.addParticle(settings.currentElementTypeId, this.currentX, t);
+                fluid.addParticle(settings.elementTypeId, this.currentX, t);
                 this.finalX = this.previousX;
                 this.finalY = t;
             }
@@ -344,7 +340,7 @@ Mouse.prototype.process = function() {
         this.previousY = this.finalY;
     } else {
         if (!this.out) {
-            fluid.addParticle(settings.currentElementTypeId, this.x, this.y);
+            fluid.addParticle(settings.elementTypeId, this.x, this.y);
             this.previousX = this.x;
             this.previousY = this.y;
         }
@@ -356,7 +352,7 @@ var mouse = new Mouse();
 mouse.init();
 
 var Particle = function(t, i, e, s, n) {
-    this.currentElementTypeId = t;
+    this.elementTypeId = t;
     this.x = i;
     this.y = e;
     this.px = s ? s : i;
@@ -367,7 +363,12 @@ var Particle = function(t, i, e, s, n) {
 
 Particle.prototype.first_process = function() {
     var t = fluid.grid[Math.round(this.y / fluid.spacing) * fluid.num_x + Math.round(this.x / fluid.spacing)];
-    if (t) t.close[t.length++] = this;
+    if (t) {
+        t.close[t.length++] = this;
+    }
+    if (this.elementTypeId == type.wall.id) {
+        return;
+    }
     this.vx = this.x - this.px;
     this.vy = this.y - this.py;
     this.vx += settings.GRAVITY_X;
@@ -382,39 +383,60 @@ Particle.prototype.second_process = function() {
     var t = 0, i = 0, e = Math.round(this.x / fluid.spacing), s = Math.round(this.y / fluid.spacing), n = [];
     for (var r = -1; r < 2; r++) {
         for (var u = -1; u < 2; u++) {
-            var o = fluid.grid[(s + u) * fluid.num_x + (e + r)];
-            if (o && o.length) {
-                for (var h = 0, a = o.length; h < a; h++) {
-                    var l = o.close[h];
-                    if (l != this) {
-                        var f = l.x - this.x;
-                        var c = l.y - this.y;
-                        var d = Math.sqrt(f * f + c * c);
-                        if (d < fluid.spacing) {
-                            var p = 1 - d / fluid.spacing;
-                            t += Math.pow(p, 2);
-                            i += Math.pow(p, 3) / 2;
-                            l.m = p;
-                            l.dfx = f / d * p;
-                            l.dfy = c / d * p;
-                            n.push(l);
+            var l = fluid.grid[(s + u) * fluid.num_x + (e + r)];
+            if (l && l.length) {
+                for (var h = 0, o = l.length; h < o; h++) {
+                    var a = l.close[h];
+                    if (a.elementTypeId == 2 && this.elementTypeId == 0) {
+                        var f = a.x - this.x;
+                        var d = a.y - this.y;
+                        var p = Math.sqrt(Math.pow(f, 2) + Math.pow(d, 2));
+                        if (p < fluid.spacing) {
+                            var c = 1 - p / fluid.spacing;
+                            t += 1;
+                            i += 1;
+                            a.m = c;
+                            a.dfx = f / p * c;
+                            a.dfy = d / p * c;
+                            n.push(a);
                         }
-                    }
+                    } else if (a != this && a.elementTypeId != type.wall.id) {
+                        var f = a.x - this.x;
+                        var d = a.y - this.y;
+                        var p = Math.sqrt(Math.pow(f, 2) + Math.pow(d, 2));
+                        if (p < fluid.spacing) {
+                            var c = 1 - p / fluid.spacing;
+                            t += Math.pow(c, 2);
+                            i += Math.pow(c, 3) / 2;
+                            a.m = c;
+                            a.dfx = f / p * c;
+                            a.dfy = d / p * c;
+                            n.push(a);
+                        }
+                    } else if (a != this && a.elementTypeId == type.wall.id) {}
                 }
             }
         }
     }
     t = (t - 3) * .5;
-    for (var m = 0, a = n.length; m < a; m++) {
+    for (var m = 0, o = n.length; m < o; m++) {
         var v = n[m];
-        var g = t + i * v.m;
-        if (this.currentElementTypeId != v.currentElementTypeId) g *= .35;
-        var y = v.dfx * g * .5;
-        var w = v.dfy * g * .5;
-        v.x += y;
-        v.y += w;
-        this.x -= y;
-        this.y -= w;
+        var y = t + i * v.m;
+        if (this.elementTypeId != type.wall.id && v.elementTypeId == type.wall.id) {
+            y *= .35;
+        } else {
+            y *= .35;
+        }
+        var g = v.dfx * y * .5;
+        var w = v.dfy * y * .5;
+        if (this.elementTypeId != type.wall.id && v.elementTypeId != type.wall.id) {
+            v.x += g;
+            v.y += w;
+        }
+        if (this.elementTypeId != type.wall.id && v.elementTypeId == type.wall.id) {
+            this.x -= g;
+            this.y -= w;
+        } else if (this.elementTypeId != type.wall.id && v.elementTypeId != type.wall.id) {}
     }
     if (this.x < fluid.limit) {
         if (settings.outflow) {
@@ -453,7 +475,7 @@ Particle.prototype.second_process = function() {
 
 Particle.prototype.draw = function() {
     var t = element.radius * 2;
-    fluid.meta_ctx.drawImage(element.textures[this.currentElementTypeId], this.x - element.radius, this.y - element.radius, t, t);
+    fluid.meta_ctx.drawImage(element.textures[this.elementTypeId], this.x - element.radius, this.y - element.radius, t, t);
 };
 
 var Settings = function() {};
@@ -462,7 +484,7 @@ Settings.prototype.init = function() {
     this.GRAVITY_X = 0;
     this.GRAVITY_Y = 1;
     this.GROUPS = [];
-    this.currentElementTypeId = 0;
+    this.elementTypeId = 0;
     this.pauseOnDrawing = true;
     this.pauseGame = false;
     this.outflow = false;
@@ -483,6 +505,10 @@ Type.prototype.init = function() {
     this.fire = {
         id: 1,
         color: "rgba(247, 44, 44"
+    };
+    this.wall = {
+        id: 2,
+        color: "rgba(229, 129, 96"
     };
 };
 

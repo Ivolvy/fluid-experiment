@@ -13,7 +13,7 @@ Element.prototype.init = function(){
 
 Element.prototype.createElement = function(elementType){
 
-    settings.currentElementTypeId = elementType.id;
+    settings.elementTypeId = elementType.id;
 
     var color = elementType.color;
 
@@ -43,18 +43,6 @@ Element.prototype.createElement = function(elementType){
     nctx.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2, true);
     nctx.closePath();
     nctx.fill();
-};
-
-Element.prototype.setWaterElement = function(){
-
-
-    this.createElement(type.water);
-};
-
-Element.prototype.setFireElement = function(){
-    settings.currentElementTypeId = type.fire.id;
-
-    this.createElement(type.fire);
 };
 
 var element = new Element();

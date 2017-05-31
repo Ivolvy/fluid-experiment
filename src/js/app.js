@@ -25,7 +25,7 @@ var Fluid = function(){
 
     this.threshold = 220;
     this.play = false;
-    this.spacing = 45;
+    this.spacing = 45; //Minimal distance between two particles
     this.limit = element.radius * 0.66;
     this.num_particles = 0;
 };

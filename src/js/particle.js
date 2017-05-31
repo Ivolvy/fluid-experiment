@@ -1,7 +1,7 @@
 /*Base particles script get from dissimulate on codepen*/
 
 var Particle = function(type, x, y, px, py){
-    this.currentElementTypeId = type; //Type of the particle (water, fire, ...)
+    this.elementTypeId = type; //Type of the particle (water, fire, ...)
     this.x = x;
     this.y = y;
     this.px = px ? px : x;
@@ -10,12 +10,22 @@ var Particle = function(type, x, y, px, py){
     this.vy = 0;
 };
 
-
+/**
+ * Handle the gravity
+ */
 Particle.prototype.first_process = function () {
+
 
     var g = fluid.grid[Math.round(this.y / fluid.spacing) * fluid.num_x + Math.round(this.x / fluid.spacing)];
 
-    if (g) g.close[g.length++] = this;
+    if (g){
+        g.close[g.length++] = this;
+    }
+
+    //If the particle is a wall, we don't move it
+    if(this.elementTypeId == type.wall.id){
+        return;
+    }
 
     this.vx = this.x - this.px;
     this.vy = this.y - this.py;
@@ -33,7 +43,11 @@ Particle.prototype.first_process = function () {
 };
 
 
+/**
+ * Handle the behavior between particles
+ */
 Particle.prototype.second_process = function () {
+
 
     var force = 0,
         force_b = 0,
@@ -41,25 +55,53 @@ Particle.prototype.second_process = function () {
         cell_y = Math.round(this.y / fluid.spacing),
         close = [];
 
+
+
     for (var x_off = -1; x_off < 2; x_off++) {
         for (var y_off = -1; y_off < 2; y_off++) {
             var cell = fluid.grid[(cell_y + y_off) * fluid.num_x + (cell_x + x_off)];
+
             if (cell && cell.length) {
                 for (var a = 0, l = cell.length; a < l; a++) {
                     var particle = cell.close[a];
-                    if (particle != this) {
-                        var dfx = particle.x - this.x;
-                        var dfy = particle.y - this.y;
-                        var distance = Math.sqrt(dfx * dfx + dfy * dfy);
+
+
+                    if(particle.elementTypeId == 2 && this.elementTypeId == 0){
+
+                        var xDistance = particle.x - this.x;
+                        var yDistance = particle.y - this.y;
+                        var distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
+
                         if (distance < fluid.spacing) {
-                            var m = 1 - (distance / fluid.spacing);
+                            var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
+                            force += 1;
+                            force_b += 1;
+                            particle.m = m;
+                            particle.dfx = (xDistance / distance) * m; //rate of increase
+                            particle.dfy = (yDistance / distance) * m; //rate of increase
+                            close.push(particle);
+                        }
+
+
+                    }
+
+                    else if (particle != this && (particle.elementTypeId != type.wall.id)) {
+
+                        var xDistance = particle.x - this.x;
+                        var yDistance = particle.y - this.y;
+                        var distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
+
+                        if (distance < fluid.spacing) {
+                            var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
                             force += Math.pow(m, 2);
                             force_b += Math.pow(m, 3) / 2;
                             particle.m = m;
-                            particle.dfx = (dfx / distance) * m;
-                            particle.dfy = (dfy / distance) * m;
+                            particle.dfx = (xDistance / distance) * m; //rate of change
+                            particle.dfy = (yDistance / distance) * m; //rate of change
                             close.push(particle);
                         }
+                    } else if(particle != this && (particle.elementTypeId == type.wall.id)){
+
                     }
                 }
             }
@@ -73,15 +115,41 @@ Particle.prototype.second_process = function () {
         var neighbor = close[i];
 
         var press = force + force_b * neighbor.m;
-        if (this.currentElementTypeId != neighbor.currentElementTypeId) press *= 0.35;
+
+        
+        if (this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
+            press *= 0.35;
+        } else{
+            press *= 0.35;
+        }
 
         var dx = neighbor.dfx * press * 0.5; //increase rebound
         var dy = neighbor.dfy * press * 0.5;
 
-        neighbor.x += dx;
-        neighbor.y += dy;
-        this.x -= dx;
-        this.y -= dy;
+
+
+        //If the neighbor is not a wall - we don't want the wall moving
+        if (this.elementTypeId != type.wall.id && neighbor.elementTypeId != type.wall.id) {
+            neighbor.x += dx;
+            neighbor.y += dy;
+        }
+
+        //If the neighbor is not a wall - we don't want the wall moving
+      /*  if (neighbor.elementTypeId != type.wall.id) {
+            neighbor.x += dx;
+            neighbor.y += dy;
+        }*/
+
+        //If the current element is not a wall - we don't want the wall moving
+        if(this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
+            this.x -= dx;
+            this.y -= dy;
+        }
+        else if(this.elementTypeId != type.wall.id && neighbor.elementTypeId != type.wall.id){
+           /* this.x -= dx;
+            this.y -= dy;*/
+        }
+
     }
 
 
@@ -130,7 +198,7 @@ Particle.prototype.draw = function () {
     var size = element.radius * 2;
 
     fluid.meta_ctx.drawImage(
-        element.textures[this.currentElementTypeId], //Draw the current type of the particle (water, fire, ...)
+        element.textures[this.elementTypeId], //Draw the current type of the particle (water, fire, ...)
         this.x - element.radius,
         this.y - element.radius,
         size,

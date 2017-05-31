@@ -250,7 +250,12 @@ Fluid.prototype.resume = function(){
     this.run();
 };
 
-
+/**
+ * Erase all particles
+ */
+Fluid.prototype.eraseAllParticles = function(){
+    this.particles = []; //reset
+};
 
 var fluid = new Fluid();
 

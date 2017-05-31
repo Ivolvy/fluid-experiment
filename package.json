@@ -10,6 +10,7 @@
     "build:css": "npm run scss && npm run autoprefixer",
     "watch:css": "onchange 'src/scss/*.scss' -- npm run build:css",
     "watch:js": "onchange 'src/js/*.js' -- npm run uglify",
+    "postinstall": "npm run build:css && npm run uglify",
     "start": "parallelshell 'npm run serve' 'npm run watch:css' 'npm run watch:js'"
   },
   "devDependencies": {

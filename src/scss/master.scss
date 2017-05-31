@@ -38,7 +38,6 @@ input{
     width: 300px;
 }
 
-
 .element{
     margin-top: 10px;
     margin-left: 10px;
@@ -65,6 +64,26 @@ input{
     #delete-button{
         @include element-button($delete-color);
     }
+}
+
+#clear-button{
+    position:absolute;
+    bottom: 20px;
+    right: 20px;
+
+    outline: none;
+    border: none;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 5px;
+
+    background-color: $background-button-color;
+}
+
+#clear-button:active{
+    background-color: grey;
 }
 
 

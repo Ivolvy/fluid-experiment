@@ -45,6 +45,10 @@ Events.prototype.init = function(){
 
         settings.wipe = true;
     };
+
+    document.getElementById('clear-button').onclick = function(e) {
+        fluid.eraseAllParticles();
+    };
 };
 
 

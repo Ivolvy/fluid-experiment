@@ -62,6 +62,9 @@ input{
     #wall-button{
         @include element-button($wall-color);
     }
+    #delete-button{
+        @include element-button($delete-color);
+    }
 }
 
 

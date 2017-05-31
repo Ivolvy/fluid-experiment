@@ -20,13 +20,13 @@ Mouse.prototype.init = function(){
     this.increaseValueX = 0;
     this.increaseValueY = 0;
 
-    this.currentX = 0;
+    this.currentX = 0; //Current position get for the mouse
     this.currentY = 0;
 
     this.finalX = 0;
     this.finalY = 0;
 
-    this.previousX = 0;
+    this.previousX = 0; //Previous position get for the mouse
     this.previousY = 0;
     this.outXposition = 0;
     this.outYposition = 0;

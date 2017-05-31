@@ -17,6 +17,7 @@ Settings.prototype.init = function(){
     this.pauseGame = false; //Pause all the game
     this.outflow = false; //Let fluid go out of the canvas
     this.inflow = false; //Create infinite water fluid at left corner
+    this.wipe = false; //Delete particles on click on them
 
 };
 

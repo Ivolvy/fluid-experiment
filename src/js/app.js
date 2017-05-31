@@ -116,7 +116,20 @@ Fluid.prototype.run = function () {
 
     //We draw particles between each point we get from mouse - in order to fill lines proportionally
     if(mouse.down) {
-        mouse.process();
+        //If the delete property is not activate
+        if(!settings.wipe){
+            mouse.process();
+        }
+
+        //Delete particles when we click on them
+        if(settings.wipe) {
+            for (var i = 0; i < that.num_particles; i++) {
+                if (((mouse.x + element.radius) >= that.particles[i].x && (mouse.x - element.radius) <= that.particles[i].x)
+                    && ((mouse.y + element.radius) >= that.particles[i].y && (mouse.y - element.radius) <= that.particles[i].y)) {
+                    fluid.destroyParticle(that.particles[i]);
+                }
+            }
+        }
 
     } else{
         mouse.previousX = mouse.x;

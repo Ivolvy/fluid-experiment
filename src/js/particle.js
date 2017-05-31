@@ -53,7 +53,10 @@ Particle.prototype.second_process = function () {
         force_b = 0,
         cell_x = Math.round(this.x / fluid.spacing),
         cell_y = Math.round(this.y / fluid.spacing),
-        close = [];
+        close = [],
+        xDistance = 0,
+        yDistance = 0,
+        distance = 0;
 
 
 
@@ -65,12 +68,12 @@ Particle.prototype.second_process = function () {
                 for (var a = 0, l = cell.length; a < l; a++) {
                     var particle = cell.close[a];
 
+                    //If the current particle is not a wall and the neighbor particle is a wall
+                    if(particle != this && this.elementTypeId != type.wall.id && particle.elementTypeId == type.wall.id){
 
-                    if(particle.elementTypeId == 2 && this.elementTypeId == 0){
-
-                        var xDistance = particle.x - this.x;
-                        var yDistance = particle.y - this.y;
-                        var distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
+                        xDistance = particle.x - this.x;
+                        yDistance = particle.y - this.y;
+                        distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
 
                         if (distance < fluid.spacing) {
                             var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
@@ -81,15 +84,12 @@ Particle.prototype.second_process = function () {
                             particle.dfy = (yDistance / distance) * m; //rate of increase
                             close.push(particle);
                         }
-
-
                     }
-
                     else if (particle != this && (particle.elementTypeId != type.wall.id)) {
 
-                        var xDistance = particle.x - this.x;
-                        var yDistance = particle.y - this.y;
-                        var distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
+                        xDistance = particle.x - this.x;
+                        yDistance = particle.y - this.y;
+                        distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
 
                         if (distance < fluid.spacing) {
                             var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
@@ -100,8 +100,6 @@ Particle.prototype.second_process = function () {
                             particle.dfy = (yDistance / distance) * m; //rate of change
                             close.push(particle);
                         }
-                    } else if(particle != this && (particle.elementTypeId == type.wall.id)){
-
                     }
                 }
             }
@@ -110,13 +108,13 @@ Particle.prototype.second_process = function () {
 
     force = (force - 3) * 0.5;
 
-    for (var i = 0, l = close.length; i < l; i++) {
+    for (var i = 0; i < close.length; i++) {
 
         var neighbor = close[i];
 
         var press = force + force_b * neighbor.m;
 
-        
+
         if (this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
             press *= 0.35;
         } else{

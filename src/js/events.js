@@ -22,33 +22,41 @@ Events.prototype.init = function(){
 
 
     document.getElementById('water-button').onclick = function(e) {
-        events.removeActive();
+        events.resetButtons();
         this.classList.add("active");
 
         element.createElement(type.water);
     };
     document.getElementById('fire-button').onclick = function(e) {
-        events.removeActive();
+        events.resetButtons();
         this.classList.add("active");
 
         element.createElement(type.fire);
     };
     document.getElementById('wall-button').onclick = function(e) {
-        events.removeActive();
+        events.resetButtons();
         this.classList.add("active");
 
         element.createElement(type.wall);
+    };
+    document.getElementById('delete-button').onclick = function(e) {
+        events.resetButtons();
+        this.classList.add("active");
+
+        settings.wipe = true;
     };
 };
 
 
 
-Events.prototype.removeActive = function(){
+Events.prototype.resetButtons = function(){
     var elements = document.getElementsByClassName("active");
 
     for (var i = 0; i < elements.length; i++) {
         elements[i].classList.remove("active");
     }
+
+    settings.wipe = false; //disable wipe
 };
 
 

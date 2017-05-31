@@ -48,7 +48,6 @@ Particle.prototype.first_process = function () {
  */
 Particle.prototype.second_process = function () {
 
-
     var force = 0,
         force_b = 0,
         cell_x = Math.round(this.x / fluid.spacing),
@@ -57,7 +56,6 @@ Particle.prototype.second_process = function () {
         xDistance = 0,
         yDistance = 0,
         distance = 0;
-
 
 
     for (var x_off = -1; x_off < 2; x_off++) {
@@ -106,48 +104,39 @@ Particle.prototype.second_process = function () {
         }
     }
 
-    force = (force - 3) * 0.5;
+    //If gravity activated and his value not equals 0
+    if(settings.gravity && settings.gravityRange != 0){
+        force = (force - 3) * 0.5;
 
-    for (var i = 0; i < close.length; i++) {
+        for (var i = 0; i < close.length; i++) {
 
-        var neighbor = close[i];
+            var neighbor = close[i];
 
-        var press = force + force_b * neighbor.m;
+            var press = force + force_b * neighbor.m;
 
 
-        if (this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
-            press *= 0.35;
-        } else{
-            press *= 0.35;
+            if (this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
+                press *= 0.35;
+            } else{
+                press *= 0.35;
+            }
+
+            var dx = neighbor.dfx * press * 0.5; //increase rebound
+            var dy = neighbor.dfy * press * 0.5;
+
+
+            //If the neighbor is not a wall - we don't want the wall moving
+            if (this.elementTypeId != type.wall.id && neighbor.elementTypeId != type.wall.id) {
+                neighbor.x += dx;
+                neighbor.y += dy;
+            }
+
+            //If the current element is not a wall - we don't want the wall moving
+            if(this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
+                this.x -= dx;
+                this.y -= dy;
+            }
         }
-
-        var dx = neighbor.dfx * press * 0.5; //increase rebound
-        var dy = neighbor.dfy * press * 0.5;
-
-
-
-        //If the neighbor is not a wall - we don't want the wall moving
-        if (this.elementTypeId != type.wall.id && neighbor.elementTypeId != type.wall.id) {
-            neighbor.x += dx;
-            neighbor.y += dy;
-        }
-
-        //If the neighbor is not a wall - we don't want the wall moving
-      /*  if (neighbor.elementTypeId != type.wall.id) {
-            neighbor.x += dx;
-            neighbor.y += dy;
-        }*/
-
-        //If the current element is not a wall - we don't want the wall moving
-        if(this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
-            this.x -= dx;
-            this.y -= dy;
-        }
-        else if(this.elementTypeId != type.wall.id && neighbor.elementTypeId != type.wall.id){
-           /* this.x -= dx;
-            this.y -= dy;*/
-        }
-
     }
 
 

@@ -208,7 +208,6 @@ Fluid.prototype.initEvents = function(canvas){
     canvas.onmousedown = function(e) {
         mouse.down = true;
         mouse.mouseDrawing = true;
-        return false;
     };
 
     document.onmouseup = function(e) { //on document 'cause we want to release fluid even if we are out canvas
@@ -218,14 +217,12 @@ Fluid.prototype.initEvents = function(canvas){
         //reset mouse positions
         mouse.previousX = 0;
         mouse.previousY = 0;
-        return false;
     };
 
     canvas.onmousemove = function(e) {
         var rect = canvas.getBoundingClientRect();
         mouse.x = e.clientX - rect.left;
         mouse.y = e.clientY - rect.top;
-        return false;
     };
 
     //If we are out or over the canvas

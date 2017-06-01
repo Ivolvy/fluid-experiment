@@ -64,6 +64,9 @@ input{
     #delete-button{
         @include element-button($delete-color);
     }
+    #gas-button{
+        @include element-button($gas-color);
+    }
 }
 
 #clear-button{
@@ -84,6 +87,10 @@ input{
 
 #clear-button:active{
     background-color: grey;
+}
+
+#gravity-range{
+    margin-left: 10px;
 }
 
 

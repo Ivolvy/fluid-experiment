@@ -17,7 +17,7 @@ var Fluid = function(){
     this.height = 0;
     this.num_x = 0;
     this.num_y = 0;
-    this.particles = null;
+    this.particles = [];
     this.grid= null;
     this.meta_ctx= null;
 
@@ -28,6 +28,8 @@ var Fluid = function(){
     this.spacing = 45; //Minimal distance between two particles
     this.limit = element.radius * 0.66;
     this.num_particles = 0;
+
+    this.particlesCreated = 0
 };
 
 
@@ -46,24 +48,32 @@ Fluid.prototype.process_image = function() {
 
 /**
  * Add particle
- * @param elementType
+ * @param elementTypeId
  * @param x
  * @param y
  * @param px
  * @param py
  */
-Fluid.prototype.addParticle = function(elementType,x, y, px, py) {
+Fluid.prototype.addParticle = function(elementTypeId,x, y, px, py) {
     var that = this;
+
     that.particles.push(
         new Particle(
-            elementType,
+            elementTypeId,
             x,
             y,
             px,
             py
         )
     );
+
+    //If the element is fire
+    if(elementTypeId == type.fire.id){
+        element.processFire(that.particles[that.particles.length - 1]);
+    }
+
     that.num_particles = that.particles.length;
+    that.particlesCreated +=1
 };
 
 /**
@@ -73,7 +83,14 @@ Fluid.prototype.addParticle = function(elementType,x, y, px, py) {
 Fluid.prototype.destroyParticle = function(obj) {
     var that = this;
 
-    that.particles.splice(that.particles.indexOf(obj), 1);
+    //Remove only the particle with his id
+    for(var i=0 ; i < that.particles.length; i++){
+        if(that.particles[i].id == obj.id) {
+            that.particles.splice(i, 1);
+        }
+    }
+
+  /*  that.particles.splice(that.particles.indexOf(obj), 1);*/
     that.num_particles = that.particles.length;
 };
 
@@ -164,8 +181,8 @@ Fluid.prototype.init = function(canvas, w, h){
     that.meta_ctx           = meta_canvas.getContext("2d");
 
 
+    element.createElement(type.gas); //Preload element for automatic transformation
     element.createElement(type.water);
-
 
     that.num_x = Math.round(that.width / that.spacing) + 1;
     that.num_y = Math.round(that.height / that.spacing) + 1;
@@ -178,7 +195,9 @@ Fluid.prototype.init = function(canvas, w, h){
         }
     }
 
-    for (var i = 0; i < settings.GROUPS.length; i++ ) {
+
+
+    /*for (var i = 0; i < settings.GROUPS.length; i++ ) {
         for (var k = 0; k < settings.GROUPS[i]; k++ ) {
             that.particles.push(
                 new Particle(
@@ -190,9 +209,9 @@ Fluid.prototype.init = function(canvas, w, h){
 
         }
     }
+    that.num_particles = that.particles.length;*/
 
 
-    that.num_particles = that.particles.length;
 
     that.play = true;
 
@@ -246,6 +265,7 @@ Fluid.prototype.stop = function(){
 Fluid.prototype.resume = function(){
     this.run();
 };
+
 
 /**
  * Erase all particles

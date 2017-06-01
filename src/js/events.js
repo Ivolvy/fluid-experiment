@@ -17,6 +17,7 @@ Events.prototype.init = function(){
         fireButton: document.getElementById('fire-button'),
         wallButton: document.getElementById('wall-button'),
         deleteButton: document.getElementById('delete-button'),
+        gasButton: document.getElementById('gas-button'),
         clearButton: document.getElementById('clear-button')
     };
 
@@ -76,6 +77,12 @@ Events.prototype.buttonsEvents = function(){
         this.classList.add("active");
 
         settings.wipe = true;
+    };
+    that.$els.gasButton.onclick = function(e) {
+        events.resetButtons();
+        this.classList.add("active");
+
+        element.createElement(type.gas);
     };
     that.$els.clearButton.onclick = function(e) {
         fluid.eraseAllParticles();

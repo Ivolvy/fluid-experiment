@@ -61,7 +61,7 @@ Mouse.prototype.process = function(){
 
     if(this.xDiff > 10){
         if(this.increaseValueX){
-            for (var a = this.previousX; a < this.currentX; a+=5){ //For each position until current mouse x
+            for (var drawX = this.previousX; drawX < this.currentX; drawX+=5){ //For each position until current mouse x
                 if(this.out){
                     if(this.outXposition < fluid.width){ //if mouse go out of the canvas
                         this.currentX = 0;
@@ -76,14 +76,14 @@ Mouse.prototype.process = function(){
 
 
                 //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId,a, this.previousY);
+                fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
 
 
-                this.finalX = a; //last position
+                this.finalX = drawX; //last position
                 this.finalY = this.previousY; //last position
             }
         } else{
-            for (var a = this.previousX; a > this.currentX; a-=5){
+            for (var drawX = this.previousX; drawX > this.currentX; drawX-=5){
                 if(this.out){
                     if(this.outXposition > fluid.width){
                         this.currentX = fluid.width;
@@ -98,10 +98,10 @@ Mouse.prototype.process = function(){
                 }
 
                 //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId,a, this.previousY);
+                fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
 
 
-                this.finalX = a;
+                this.finalX = drawX;
                 this.finalY = this.previousY; //last position
             }
         }
@@ -112,7 +112,7 @@ Mouse.prototype.process = function(){
     }
     else if(this.yDiff > 10){
         if(this.increaseValueY){
-            for (var a = this.previousY; a < this.currentY; a+=5){ //For each position until current mouse x
+            for (var drawY = this.previousY; drawY < this.currentY; drawY+=5){ //For each position until current mouse x
                 if(this.out){
                     if(this.outYposition < fluid.height){ //if mouse go out of the canvas
                         this.currentY = 0;
@@ -127,13 +127,13 @@ Mouse.prototype.process = function(){
                 }
 
                 //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId,this.previousX, a);
+                fluid.addParticle(settings.elementTypeId,this.previousX, drawY);
 
                 this.finalX = this.previousX; //last position
-                this.finalY = a; //last position
+                this.finalY = drawY; //last position
             }
         } else{
-            for (var a = this.previousY; a > this.currentY; a-=5){
+            for (var drawY = this.previousY; drawY > this.currentY; drawY-=5){
                 if(this.out){
                     if(this.outYposition > fluid.height){
                         this.currentY = fluid.height;
@@ -149,10 +149,10 @@ Mouse.prototype.process = function(){
 
 
                 //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId,this.currentX, a);
+                fluid.addParticle(settings.elementTypeId,this.currentX, drawY);
 
                 this.finalX = this.previousX; //last position
-                this.finalY = a;
+                this.finalY = drawY;
             }
         }
 

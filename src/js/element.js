@@ -45,5 +45,18 @@ Element.prototype.createElement = function(elementType){
     nctx.fill();
 };
 
+/**
+ * Delete randomly fire element
+ * @param element
+ */
+Element.prototype.processFire = function(element){
+    var randomTimer = Math.floor((Math.random() * 12000) + 1000); //Between 1 and 12 seconds
+
+    setTimeout(function(){
+        fluid.destroyParticle(element);
+    }, randomTimer);
+
+};
+
 var element = new Element();
 element.init();

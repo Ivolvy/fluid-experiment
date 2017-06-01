@@ -1,13 +1,33 @@
 /*Base particles script get from dissimulate on codepen*/
 
-var Particle = function(type, x, y, px, py){
-    this.elementTypeId = type; //Type of the particle (water, fire, ...)
+/**
+ * Create Particle
+ * @param elementTypeId
+ * @param x
+ * @param y
+ * @param px
+ * @param py
+ * @constructor
+ */
+var Particle = function(elementTypeId, x, y, px, py){
+    this.id = fluid.particlesCreated;
+    this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
     this.y = y;
     this.px = px ? px : x;
     this.py = py ? py : y;
     this.vx = 0;
     this.vy = 0;
+    this.willBeDestroyed = false;
+
+
+    if(elementTypeId == type.gas.id){
+        this.gravityX = 0;
+        this.gravityY = 0;
+    } else{
+        this.gravityX = settings.GRAVITY_X;
+        this.gravityY = settings.GRAVITY_Y;
+    }
 };
 
 /**
@@ -34,8 +54,8 @@ Particle.prototype.first_process = function () {
         //here useful to interact with the fluid with mouse?
     }*/
 
-    this.vx += settings.GRAVITY_X;
-    this.vy += settings.GRAVITY_Y;
+    this.vx += this.gravityX;
+    this.vy += this.gravityY;
     this.px = this.x;
     this.py = this.y;
     this.x += this.vx;
@@ -64,39 +84,58 @@ Particle.prototype.second_process = function () {
 
             if (cell && cell.length) {
                 for (var a = 0, l = cell.length; a < l; a++) {
-                    var particle = cell.close[a];
+                    var closeParticle = cell.close[a];
 
                     //If the current particle is not a wall and the neighbor particle is a wall
-                    if(particle != this && this.elementTypeId != type.wall.id && particle.elementTypeId == type.wall.id){
+                    if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
 
-                        xDistance = particle.x - this.x;
-                        yDistance = particle.y - this.y;
+                        xDistance = closeParticle.x - this.x;
+                        yDistance = closeParticle.y - this.y;
                         distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
 
                         if (distance < fluid.spacing) {
                             var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
                             force += 1;
                             force_b += 1;
-                            particle.m = m;
-                            particle.dfx = (xDistance / distance) * m; //rate of increase
-                            particle.dfy = (yDistance / distance) * m; //rate of increase
-                            close.push(particle);
+                            closeParticle.m = m;
+                            closeParticle.dfx = (xDistance / distance) * m; //rate of increase
+                            closeParticle.dfy = (yDistance / distance) * m; //rate of increase
+
+                            //Avoid errors
+                            if(isNaN(closeParticle.dfx)){
+                                closeParticle.dfx = 0;
+                            }
+                            if(isNaN(closeParticle.dfy)){
+                                closeParticle.dfy = 0;
+                            }
+
+                            close.push(closeParticle);
                         }
                     }
-                    else if (particle != this && (particle.elementTypeId != type.wall.id)) {
+                    else if (closeParticle != this && (closeParticle.elementTypeId != type.wall.id)) {
 
-                        xDistance = particle.x - this.x;
-                        yDistance = particle.y - this.y;
+                        xDistance = closeParticle.x - this.x;
+                        yDistance = closeParticle.y - this.y;
                         distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
 
                         if (distance < fluid.spacing) {
                             var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
                             force += Math.pow(m, 2);
                             force_b += Math.pow(m, 3) / 2;
-                            particle.m = m;
-                            particle.dfx = (xDistance / distance) * m; //rate of change
-                            particle.dfy = (yDistance / distance) * m; //rate of change
-                            close.push(particle);
+                            closeParticle.m = m;
+                            closeParticle.dfx = (xDistance / distance) * m; //rate of change
+                            closeParticle.dfy = (yDistance / distance) * m; //rate of change
+
+
+                            //Avoid errors
+                            if(isNaN(closeParticle.dfx)){
+                                closeParticle.dfx = 0;
+                            }
+                            if(isNaN(closeParticle.dfy)){
+                                closeParticle.dfy = 0;
+                            }
+
+                            close.push(closeParticle);
                         }
                     }
                 }
@@ -108,16 +147,34 @@ Particle.prototype.second_process = function () {
     if(settings.gravity && settings.gravityRange != 0){
         force = (force - 3) * 0.5;
 
+
         for (var i = 0; i < close.length; i++) {
 
             var neighbor = close[i];
 
+
+
+
+
+            if(!this.willBeDestroyed && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
+
+                if((this.x + 5) >= neighbor.x && (this.x - 5) <= neighbor.x &&
+                    (this.y + 5) >= neighbor.y && (this.y - 5) <= neighbor.y){
+
+
+                    this.launchTimer(this, neighbor);
+                    this.willBeDestroyed = true; //Set to true in order to not pass twice in destroy function
+                }
+            }
+
+
+
+
+
             var press = force + force_b * neighbor.m;
 
 
-            if (this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
-                press *= 0.35;
-            } else{
+            if (this.elementTypeId != neighbor.elementTypeId) {
                 press *= 0.35;
             }
 
@@ -137,6 +194,7 @@ Particle.prototype.second_process = function () {
                 this.y -= dy;
             }
         }
+
     }
 
 
@@ -179,6 +237,22 @@ Particle.prototype.second_process = function () {
     this.draw();
 };
 
+
+
+Particle.prototype.launchTimer = function(param, neighbor){
+    var that = this;
+
+    setTimeout(function(){
+        that.timerTest(param, neighbor);
+    }, 200);
+};
+
+Particle.prototype.timerTest = function(param, neighbor){
+    neighbor.elementTypeId = type.gas.id;
+    neighbor.gravityY = -0.5;
+    fluid.destroyParticle(param);
+
+};
 
 Particle.prototype.draw = function () {
 

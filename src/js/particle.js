@@ -68,14 +68,16 @@ Particle.prototype.first_process = function () {
  */
 Particle.prototype.second_process = function () {
 
-    var force = 0,
-        force_b = 0,
-        cell_x = Math.round(this.x / fluid.spacing),
-        cell_y = Math.round(this.y / fluid.spacing),
-        close = [],
-        xDistance = 0,
-        yDistance = 0,
-        distance = 0;
+    this.m = 0; //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
+    this.force = 0;
+    this.force_b = 0;
+
+    var cell_x = Math.round(this.x / fluid.spacing);
+    var cell_y = Math.round(this.y / fluid.spacing);
+    this.close = [];
+    this.xDistance = 0;
+    this.yDistance = 0;
+    this.distance = 0;
 
 
     for (var x_off = -1; x_off < 2; x_off++) {
@@ -86,101 +88,54 @@ Particle.prototype.second_process = function () {
                 for (var a = 0, l = cell.length; a < l; a++) {
                     var closeParticle = cell.close[a];
 
-                    //If the current particle is not a wall and the neighbor particle is a wall
-                    if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
-
-                        xDistance = closeParticle.x - this.x;
-                        yDistance = closeParticle.y - this.y;
-                        distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
-
-                        if (distance < fluid.spacing) {
-                            var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
-                            force += 1;
-                            force_b += 1;
-                            closeParticle.m = m;
-                            closeParticle.dfx = (xDistance / distance) * m; //rate of increase
-                            closeParticle.dfy = (yDistance / distance) * m; //rate of increase
-
-                            //Avoid errors
-                            if(isNaN(closeParticle.dfx)){
-                                closeParticle.dfx = 0;
-                            }
-                            if(isNaN(closeParticle.dfy)){
-                                closeParticle.dfy = 0;
-                            }
-
-                            close.push(closeParticle);
-                        }
-                    }
-                    else if (closeParticle != this && (closeParticle.elementTypeId != type.wall.id)) {
-
-                        xDistance = closeParticle.x - this.x;
-                        yDistance = closeParticle.y - this.y;
-                        distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
-
-                        if (distance < fluid.spacing) {
-                            var m = 1 - (distance / fluid.spacing); //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
-                            force += Math.pow(m, 2);
-                            force_b += Math.pow(m, 3) / 2;
-                            closeParticle.m = m;
-                            closeParticle.dfx = (xDistance / distance) * m; //rate of change
-                            closeParticle.dfy = (yDistance / distance) * m; //rate of change
-
-
-                            //Avoid errors
-                            if(isNaN(closeParticle.dfx)){
-                                closeParticle.dfx = 0;
-                            }
-                            if(isNaN(closeParticle.dfy)){
-                                closeParticle.dfy = 0;
-                            }
-
-                            close.push(closeParticle);
-                        }
-                    }
+                    this.processForcesOnParticle(closeParticle);
                 }
             }
         }
     }
 
+
+    this.addForcesToParticles();
+    this.checkBorderLimits();
+
+    this.draw();
+};
+
+/**
+ * Add calculated forces to particles
+ */
+Particle.prototype.addForcesToParticles = function(){
     //If gravity activated and his value not equals 0
     if(settings.gravity && settings.gravityRange != 0){
-        force = (force - 3) * 0.5;
 
+        var pressVariation = 0; //Used to increase or not the merge this.force of particles
 
-        for (var i = 0; i < close.length; i++) {
+        //Change pressVariation according to particle type
+        if(this.elementTypeId == type.gas.id){
+            pressVariation = 0.1;
+        } else{
+            this.force = (this.force - 3) * 0.5;
+            pressVariation = 0.5;
+        }
+        
+        for (var i = 0; i < this.close.length; i++) {
 
-            var neighbor = close[i];
+            var neighbor = this.close[i];
 
+            this.processWaterAndFire(neighbor);
 
-
-
-
-            if(!this.willBeDestroyed && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
-
-                if((this.x + 5) >= neighbor.x && (this.x - 5) <= neighbor.x &&
-                    (this.y + 5) >= neighbor.y && (this.y - 5) <= neighbor.y){
-
-
-                    this.launchTimer(this, neighbor);
-                    this.willBeDestroyed = true; //Set to true in order to not pass twice in destroy function
-                }
-            }
-
-
-
-
-
-            var press = force + force_b * neighbor.m;
+            //Press is this.force to merge current element and neighbor
+            var press = this.force + this.force_b * neighbor.m;
 
 
             if (this.elementTypeId != neighbor.elementTypeId) {
                 press *= 0.35;
             }
 
-            var dx = neighbor.dfx * press * 0.5; //increase rebound
-            var dy = neighbor.dfy * press * 0.5;
+            //press *= 0.35; here to make water go properly on wall - find a way to not loose performance
 
+            var dx = neighbor.dfx * press * pressVariation; //increase rebound
+            var dy = neighbor.dfy * press * pressVariation;
 
             //If the neighbor is not a wall - we don't want the wall moving
             if (this.elementTypeId != type.wall.id && neighbor.elementTypeId != type.wall.id) {
@@ -194,10 +149,13 @@ Particle.prototype.second_process = function () {
                 this.y -= dy;
             }
         }
-
     }
+};
 
-
+/**
+ * Check border limits for the particle
+ */
+Particle.prototype.checkBorderLimits = function(){
     //Check if the particles are on the borders of the canvas
     if (this.x < fluid.limit) {
         if (settings.outflow) {
@@ -232,27 +190,101 @@ Particle.prototype.second_process = function () {
             this.y = fluid.height - fluid.limit;
         }
     }
-
-
-    this.draw();
 };
 
 
+/**
+ * Process forces on particles
+ * @param closeParticle
+ */
+Particle.prototype.processForcesOnParticle = function(closeParticle){
 
-Particle.prototype.launchTimer = function(param, neighbor){
-    var that = this;
+    this.xDistance = closeParticle.x - this.x;
+    this.yDistance = closeParticle.y - this.y;
+    this.distance = Math.sqrt(Math.pow(this.xDistance, 2) + Math.pow(this.yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
 
+    if (this.distance < fluid.spacing) {
+
+        this.processForceForElement(closeParticle);
+
+        closeParticle.m = this.m;
+        closeParticle.dfx = (this.xDistance / this.distance) * this.m; //rate of change
+        closeParticle.dfy = (this.yDistance / this.distance) * this.m; //rate of change
+
+        //Avoid errors
+        if(isNaN(closeParticle.dfx)){
+            closeParticle.dfx = 0;
+        }
+        if(isNaN(closeParticle.dfy)){
+            closeParticle.dfy = 0;
+        }
+
+        this.close.push(closeParticle);
+    }
+};
+
+/**
+ * Handle different forces for each particle
+ * @param closeParticle
+ */
+Particle.prototype.processForceForElement = function(closeParticle){
+
+    //If the current particle is not a wall and the neighbor particle is a wall
+    if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
+        this.m = 1 - (this.distance / fluid.spacing);
+        this.force += 1;
+        this.force_b += 1;
+    }
+    else if(closeParticle != this && this.elementTypeId == type.gas.id){
+
+        //If the gas particle is already moving
+        if(this.vx != 0 || this.vy != 0){
+            this.m = 0.1;
+        } else{
+            this.m = 0;
+        }
+
+        this.force = 0.1;
+        this.force_b = 0.1;
+    }
+    else if (closeParticle != this && (closeParticle.elementTypeId != type.wall.id)) {
+        this.m = 1 - (this.distance / fluid.spacing);
+        this.force += Math.pow(this.m, 2);
+        this.force_b += Math.pow(this.m, 3) / 2;
+    }
+
+};
+
+
+/**
+ * When water and fire meet
+ * @param neighbor
+ */
+Particle.prototype.processWaterAndFire = function(neighbor){
+    if(!this.willBeDestroyed && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
+
+        if((this.x + 7) >= neighbor.x && (this.x - 7) <= neighbor.x &&
+            (this.y + 7) >= neighbor.y && (this.y - 7) <= neighbor.y){
+
+
+            this.launchTimerToGas(this, neighbor);
+            this.willBeDestroyed = true; //Set to true in order to not pass twice in destroy function
+        }
+    }
+};
+
+
+/**
+ * Launch Timer to create gas with water and fire
+ * @param currentParticle
+ * @param neighbor
+ */
+Particle.prototype.launchTimerToGas = function(currentParticle, neighbor){
     setTimeout(function(){
-        that.timerTest(param, neighbor);
+        element.createGas(currentParticle, neighbor);
     }, 200);
 };
 
-Particle.prototype.timerTest = function(param, neighbor){
-    neighbor.elementTypeId = type.gas.id;
-    neighbor.gravityY = -0.5;
-    fluid.destroyParticle(param);
-
-};
 
 Particle.prototype.draw = function () {
 

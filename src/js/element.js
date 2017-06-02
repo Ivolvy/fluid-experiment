@@ -58,5 +58,16 @@ Element.prototype.processFire = function(element){
 
 };
 
+/**
+ * Create Gas when fire and water meet
+ * @param currentParticle
+ * @param neighbor
+ */
+Element.prototype.createGas = function(currentParticle, neighbor){
+    neighbor.elementTypeId = type.gas.id;
+    neighbor.gravityY = -0.5;
+    fluid.destroyParticle(currentParticle);
+};
+
 var element = new Element();
 element.init();

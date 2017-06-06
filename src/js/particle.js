@@ -1,5 +1,3 @@
-/*Base particles script get from dissimulate on codepen*/
-
 /**
  * Create Particle
  * @param elementTypeId
@@ -19,6 +17,8 @@ var Particle = function(elementTypeId, x, y, px, py){
     this.vx = 0;
     this.vy = 0;
     this.willBeDestroyed = false;
+    this.willBeConverted = false;
+    this.convertedFromLiquidFuel = false;
 
 
     if(elementTypeId == type.gas.id){
@@ -105,6 +105,11 @@ Particle.prototype.second_process = function () {
  * Add calculated forces to particles
  */
 Particle.prototype.addForcesToParticles = function(){
+    var that = this;
+
+    this.hasWaterNeighbor = 0;
+    this.stockLiquidFire = [];
+
     //If gravity activated and his value not equals 0
     if(settings.gravity && settings.gravityRange != 0){
 
@@ -117,12 +122,17 @@ Particle.prototype.addForcesToParticles = function(){
             this.force = (this.force - 3) * 0.5;
             pressVariation = 0.5;
         }
-        
+
+
+
         for (var i = 0; i < this.close.length; i++) {
 
             var neighbor = this.close[i];
 
-            this.processWaterAndFire(neighbor);
+
+            that.testEligibilityToFire(neighbor, i);
+            that.processWaterAndFire(neighbor);
+
 
             //Press is this.force to merge current element and neighbor
             var press = this.force + this.force_b * neighbor.m;
@@ -261,13 +271,16 @@ Particle.prototype.processForceForElement = function(closeParticle){
  * @param neighbor
  */
 Particle.prototype.processWaterAndFire = function(neighbor){
+
+    //If the particle is not already programmed to be destroyed
     if(!this.willBeDestroyed && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
 
-        if((this.x + 7) >= neighbor.x && (this.x - 7) <= neighbor.x &&
-            (this.y + 7) >= neighbor.y && (this.y - 7) <= neighbor.y){
+        //7 => how close the particles must be
+        if((this.x + settings.maxDistanceForChemistry) >= neighbor.x && (this.x - settings.maxDistanceForChemistry) <= neighbor.x &&
+            (this.y + settings.maxDistanceForChemistry) >= neighbor.y && (this.y - settings.maxDistanceForChemistry) <= neighbor.y){
 
 
-            this.launchTimerToGas(this, neighbor);
+            this.launchTimerToChemistryFromWaterAndFire(this, neighbor);
             this.willBeDestroyed = true; //Set to true in order to not pass twice in destroy function
         }
     }
@@ -275,13 +288,90 @@ Particle.prototype.processWaterAndFire = function(neighbor){
 
 
 /**
- * Launch Timer to create gas with water and fire
+ * Test eligibility to fire - if fire is near of liquidFuel and there is not so much water around
+ * @param neighbor
+ * @param increment
+ */
+Particle.prototype.testEligibilityToFire = function(neighbor, increment){
+    var that = this;
+
+    //If the fire element has water neighbor, increase 1
+    if(this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
+        this.hasWaterNeighbor += 1;
+    }
+    //If fire has neighbor liquidFuel, stock them
+    else if(this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.liquidFuel.id){
+        this.stockLiquidFire.push(neighbor);
+    }
+
+    //If we are at the end of the close particles
+    if(this.elementTypeId == type.fire.id && this.close.length-1 == increment){
+        //Test if there is less ... water neighbor
+        if(this.hasWaterNeighbor < settings.maxWaterAroundToTransformInFire){
+            //And transform stocked liquidFuel in Fire
+            this.stockLiquidFire.forEach(function(element){
+                that.processFireAndLiquidFuel(element);
+            });
+
+        }
+    }
+};
+
+
+/**
+ * When fire meet liquidFuel
+ * @param neighbor
+ */
+Particle.prototype.processFireAndLiquidFuel = function(neighbor){
+
+    //If the particle is not already programmed to be destroyed
+    if(!neighbor.willBeConverted && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.liquidFuel.id){
+
+        //7 => how close the particles must be
+        if((this.x + settings.maxDistanceForChemistry) >= neighbor.x && (this.x - settings.maxDistanceForChemistry) <= neighbor.x &&
+            (this.y + settings.maxDistanceForChemistry) >= neighbor.y && (this.y - settings.maxDistanceForChemistry) <= neighbor.y){
+
+
+            this.launchTimerToChemistryFromFireAndLiquidFuel(this, neighbor);
+            this.willBeConverted = true; //Set to true in order to not pass twice in destroy function
+            this.convertedFromLiquidFuel = true;
+        }
+    }
+};
+
+
+/**
+ * Launch Timer to create gas/liquidFuel with water and fire
  * @param currentParticle
  * @param neighbor
  */
-Particle.prototype.launchTimerToGas = function(currentParticle, neighbor){
+Particle.prototype.launchTimerToChemistryFromWaterAndFire = function(currentParticle, neighbor){
     setTimeout(function(){
-        element.createGas(currentParticle, neighbor);
+        if(neighbor.elementTypeId == type.water.id) { //Double security
+            var randomChemistry = Math.floor((Math.random() * 5) + 1); //Between 1 and 3 options
+
+            if (randomChemistry == 1) {
+                element.createGas(currentParticle, neighbor);
+            } else if (randomChemistry == 2) {
+                element.createLiquidFuel(currentParticle, neighbor);
+            } else if(!currentParticle.convertedFromLiquidFuel){
+                fluid.destroyParticle(currentParticle);
+            }
+        }
+    }, 200);
+};
+
+/**
+ * Launch Timer to create fire with fire and liquidFuel
+ * @param currentParticle
+ * @param neighbor
+ */
+Particle.prototype.launchTimerToChemistryFromFireAndLiquidFuel = function(currentParticle, neighbor){
+    setTimeout(function(){
+        if(neighbor.elementTypeId == type.liquidFuel.id) { //Double security
+            neighbor.elementTypeId = type.fire.id;
+            element.processFire(neighbor);
+        }
     }, 200);
 };
 

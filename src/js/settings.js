@@ -25,6 +25,9 @@ Settings.prototype.init = function(){
     this.inflow = false; //Create infinite water fluid at left corner
     this.wipe = false; //Delete particles on click on them
 
+    this.maxDistanceForChemistry = 7; //How close two particles must be to transform
+    this.maxWaterAroundToTransformInFire = 5; //How close two particles must be to transform
+
     this.gravity = true;
 
 };

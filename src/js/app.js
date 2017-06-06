@@ -182,6 +182,7 @@ Fluid.prototype.init = function(canvas, w, h){
 
 
     element.createElement(type.gas); //Preload element for automatic transformation
+    element.createElement(type.liquidFuel);
     element.createElement(type.water);
 
     that.num_x = Math.round(that.width / that.spacing) + 1;

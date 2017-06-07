@@ -29,7 +29,9 @@ var Fluid = function(){
     this.limit = element.radius * 0.66;
     this.num_particles = 0;
 
-    this.particlesCreated = 0
+    this.particlesCreated = 0;
+
+    this.corners = [];
 };
 
 
@@ -44,6 +46,12 @@ Fluid.prototype.process_image = function() {
     }
 
     that.ctx.putImageData(imageData, 0, 0);
+
+
+    that.corners.forEach(function(arc){
+        arc.draw();
+    });
+
 };
 
 /**
@@ -197,6 +205,8 @@ Fluid.prototype.init = function(canvas, w, h){
     }
 
 
+    //fluid.drawCorners(); - for future use (rebound particles on curved corners)
+
 
     /*for (var i = 0; i < settings.GROUPS.length; i++ ) {
         for (var k = 0; k < settings.GROUPS[i]; k++ ) {
@@ -274,6 +284,49 @@ Fluid.prototype.resume = function(){
 Fluid.prototype.eraseAllParticles = function(){
     this.particles = []; //reset
 };
+
+
+/**
+ * Draw all corners
+ */
+Fluid.prototype.drawCorners = function(){
+    fluid.drawArc(fluid.width - 75, 75, 75, -90, 0);
+    fluid.drawArc(fluid.width - 75, fluid.height - 75, 75, 0, 90);
+    fluid.drawArc(75, fluid.height - 75, 75, 90, 180);
+    fluid.drawArc(75, 75, 75, 180, -90);
+};
+
+
+/**
+ * Draw an arc
+ * @param x
+ * @param y
+ * @param radius
+ * @param startAngle
+ * @param endAngle
+ */
+Fluid.prototype.drawArc = function(x, y, radius, startAngle, endAngle){
+    var that = this;
+
+    this.arc = {
+        x: x,
+        y: y,
+        radius: radius,
+        draw: function () {
+            that.ctx.beginPath();
+            that.ctx.arc(this.x, this.y, this.radius, fluid.degreesToRadians(startAngle), fluid.degreesToRadians(endAngle), false);
+            that.ctx.stroke();
+        }
+    };
+
+    this.corners.push(this.arc);
+};
+
+
+Fluid.prototype.degreesToRadians = function(degrees) {
+    return (degrees * Math.PI) / 180;
+};
+
 
 var fluid = new Fluid();
 

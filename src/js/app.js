@@ -189,9 +189,9 @@ Fluid.prototype.init = function(canvas, w, h){
     that.meta_ctx           = meta_canvas.getContext("2d");
 
 
-    element.createElement(type.gas); //Preload element for automatic transformation
-    element.createElement(type.liquidFuel);
-    element.createElement(type.water);
+    //Preload all particles elements
+    element.preloadAllElements();
+
 
     that.num_x = Math.round(that.width / that.spacing) + 1;
     that.num_y = Math.round(that.height / that.spacing) + 1;

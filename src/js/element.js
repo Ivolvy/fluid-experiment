@@ -13,8 +13,6 @@ Element.prototype.init = function(){
 
 Element.prototype.createElement = function(elementType){
 
-    settings.elementTypeId = elementType.id;
-
     var color = elementType.color;
 
     this.newElement = document.createElement("canvas");
@@ -77,6 +75,18 @@ Element.prototype.createGas = function(currentParticle, neighbor){
 Element.prototype.createLiquidFuel = function(currentParticle, neighbor){
     neighbor.elementTypeId = type.liquidFuel.id;
     fluid.destroyParticle(currentParticle);
+};
+
+
+/**
+ * Preload element for automatic chemical transformation
+ */
+Element.prototype.preloadAllElements = function(){
+    element.createElement(type.water);
+    element.createElement(type.fire);
+    element.createElement(type.wall);
+    element.createElement(type.gas);
+    element.createElement(type.liquidFuel);
 };
 
 

@@ -283,6 +283,7 @@ Fluid.prototype.resume = function(){
  */
 Fluid.prototype.eraseAllParticles = function(){
     this.particles = []; //reset
+    this.num_particles = this.particles.length; //reset
 };
 
 

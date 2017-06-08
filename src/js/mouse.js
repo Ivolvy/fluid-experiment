@@ -13,8 +13,8 @@ Mouse.prototype.init = function(){
     this.y = 0;
 
     this.mouseDrawing = false;
-
-
+    
+    this.diff = 0;
     this.xDiff = 0;
     this.yDiff = 0;
     this.increaseValueX = 0;
@@ -38,24 +38,14 @@ Mouse.prototype.process = function(){
     this.currentX = this.x;
     this.currentY = this.y;
 
-    if(this.previousX > this.currentX){ //Right to left
-        this.xDiff = this.previousX - this.currentX;
-        this.increaseValueX = false;
-    }
-    if(this.previousX < this.currentX ){ //Left to right
-        this.xDiff = this.currentX - this.previousX;
-        this.increaseValueX = true;
-    }
+    //Test the distance between two points and if it increase or decrease
+    this.diff = this.currentX - this.previousX;
+    this.xDiff = Math.abs(this.diff);
+    this.increaseValueX = Math.sign(this.diff) == 1; //if == 1 -> true ; else -> false
 
-
-    if(this.previousY > this.currentY){ //Bottom to Top
-        this.yDiff = this.previousY - this.currentY;
-        this.increaseValueY = false;
-    }
-    if(this.previousY < this.currentY ){ //Top to bottom
-        this.yDiff = this.currentY - this.previousY;
-        this.increaseValueY = true;
-    }
+    this.diff = this.currentY - this.previousY;
+    this.yDiff = Math.abs(this.diff);
+    this.increaseValueY = Math.sign(this.diff) == 1;
 
 
 
@@ -67,20 +57,7 @@ Mouse.prototype.process = function(){
                         this.currentX = 0;
                     }
                 }
-
-                if(this.increaseValueY && this.previousY < this.currentY){
-                    this.previousY+=5;
-                } else if(!this.increaseValueY && this.previousY > this.currentY){
-                    this.previousY-=5;
-                }
-
-
-                //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
-
-
-                this.finalX = drawX; //last position
-                this.finalY = this.previousY; //last position
+                mouse.drawXMissingParticles(drawX);
             }
         } else{
             for (var drawX = this.previousX; drawX > this.currentX; drawX-=5){
@@ -89,20 +66,7 @@ Mouse.prototype.process = function(){
                         this.currentX = fluid.width;
                     }
                 }
-
-
-                if(this.increaseValueY && this.previousY < this.currentY){
-                    this.previousY+=5;
-                } else if(!this.increaseValueY && this.previousY > this.currentY){
-                    this.previousY-=5;
-                }
-
-                //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
-
-
-                this.finalX = drawX;
-                this.finalY = this.previousY; //last position
+                mouse.drawXMissingParticles(drawX);
             }
         }
 
@@ -118,19 +82,7 @@ Mouse.prototype.process = function(){
                         this.currentY = 0;
                     }
                 }
-
-
-                if(this.increaseValueX && this.previousX < this.currentX){
-                    this.previousX+=5;
-                } else if(!this.increaseValueX && this.previousX > this.currentX){
-                    this.previousX-=5;
-                }
-
-                //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId,this.previousX, drawY);
-
-                this.finalX = this.previousX; //last position
-                this.finalY = drawY; //last position
+                mouse.drawYMissingParticles(drawY);
             }
         } else{
             for (var drawY = this.previousY; drawY > this.currentY; drawY-=5){
@@ -139,20 +91,7 @@ Mouse.prototype.process = function(){
                         this.currentY = fluid.height;
                     }
                 }
-
-
-                if(this.increaseValueX && this.previousX < this.currentX){
-                    this.previousX+=5;
-                } else if(!this.increaseValueX && this.previousX > this.currentX){
-                    this.previousX-=5;
-                }
-
-
-                //Create particles on mouse position
-                fluid.addParticle(settings.elementTypeId,this.currentX, drawY);
-
-                this.finalX = this.previousX; //last position
-                this.finalY = drawY;
+                mouse.drawYMissingParticles(drawY);
             }
         }
 
@@ -163,11 +102,68 @@ Mouse.prototype.process = function(){
 
         if(!this.out){
 
+            mouse.testReplaceParticles(this.x, this.y);
+
             //Create particles on mouse position
             fluid.addParticle(settings.elementTypeId,this.x, this.y);
 
             this.previousX = this.x;
             this.previousY = this.y;
+        }
+    }
+};
+
+
+/**
+ * Draw missing X particles
+ */
+Mouse.prototype.drawXMissingParticles = function(drawX){
+    if(this.increaseValueY && this.previousY < this.currentY){
+        this.previousY+=5;
+    } else if(!this.increaseValueY && this.previousY > this.currentY){
+        this.previousY-=5;
+    }
+
+    mouse.testReplaceParticles(drawX, this.previousY);
+
+    //Create particles on mouse position
+    fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
+
+
+    this.finalX = drawX; //last position
+    this.finalY = this.previousY; //last position
+};
+
+/**
+ * Draw missing Y particles
+ */
+Mouse.prototype.drawYMissingParticles = function(drawY){
+    if(this.increaseValueX && this.previousX < this.currentX){
+        this.previousX+=5;
+    } else if(!this.increaseValueX && this.previousX > this.currentX){
+        this.previousX-=5;
+    }
+
+    mouse.testReplaceParticles(this.previousX, drawY);
+
+    //Create particles on mouse position
+    fluid.addParticle(settings.elementTypeId,this.previousX, drawY);
+
+    this.finalX = this.previousX; //last position
+    this.finalY = drawY; //last position
+};
+
+
+/**
+ * Replace below particles by those who are drawn above
+ */
+Mouse.prototype.testReplaceParticles = function(mouseX, mouseY){
+    for (var i = 0; i < fluid.num_particles; i++) {
+        if(settings.elementTypeId != fluid.particles[i].elementTypeId) {
+            if (((mouseX + element.radius) >= fluid.particles[i].x && (mouseX - element.radius) <= fluid.particles[i].x)
+                && ((mouseY + element.radius) >= fluid.particles[i].y && (mouseY - element.radius) <= fluid.particles[i].y)) {
+                fluid.destroyParticle(fluid.particles[i]);
+            }
         }
     }
 };

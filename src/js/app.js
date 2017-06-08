@@ -32,6 +32,11 @@ var Fluid = function(){
     this.particlesCreated = 0;
 
     this.corners = [];
+
+
+
+    this.groupParticles = [];
+    this.groupLength = 0;
 };
 
 
@@ -81,8 +86,29 @@ Fluid.prototype.addParticle = function(elementTypeId,x, y, px, py) {
     }
 
     that.num_particles = that.particles.length;
-    that.particlesCreated +=1
+    that.particlesCreated +=1;
 };
+
+
+
+Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
+    var that = this;
+
+
+
+    var group =  new GroupParticle(type.fire.id, x, y, px, py);
+    group.subParticles.push(new Particle(elementTypeId, x, y, px, py, 10, 10));
+    group.subParticles.push(new Particle(elementTypeId, x, y, px, py, 20, 20));
+    group.subParticles.push(new Particle(elementTypeId, x, y, px, py, 30, 30));
+    group.subParticles.push(new Particle(elementTypeId, x, y, px, py, 40, 40));
+    group.subParticles.push(new Particle(elementTypeId, x, y, px, py, 50, 50));
+
+
+    that.groupParticles.push(group);
+    that.groupLength = that.groupParticles.length;
+
+};
+
 
 /**
  * Delete particle outside canvas
@@ -114,21 +140,37 @@ Fluid.prototype.run = function () {
 
 
     var i = that.num_particles;
+    var y = that.groupLength;
+
     if((!settings.pauseOnDrawing && mouse.mouseDrawing) || !mouse.mouseDrawing) {
         while(i--) {
             if(that.particles[i]){
                 that.particles[i].first_process();
             }
         }
+
+        while(y--){
+            if(that.groupParticles[y]){
+                that.groupParticles[y].first_process();
+            }
+        }
+
     }
 
     i = that.num_particles;
+    y = that.groupLength;
     while (i--) {
         if(that.particles[i]) {
             that.particles[i].second_process();
         }
     }
 
+  /*  while(y--){
+        if(that.groupParticles[y]){
+            that.groupParticles[y].second_process();
+        }
+    }
+*/
 
     fluid.process_image();
 
@@ -204,24 +246,10 @@ Fluid.prototype.init = function(canvas, w, h){
         }
     }
 
+    fluid.addGroupParticles(type.rigid.id, fluid.limit, fluid.limit, fluid.limit - 4);
+
 
     //fluid.drawCorners(); - for future use (rebound particles on curved corners)
-
-
-    /*for (var i = 0; i < settings.GROUPS.length; i++ ) {
-        for (var k = 0; k < settings.GROUPS[i]; k++ ) {
-            that.particles.push(
-                new Particle(
-                    i,
-                    element.radius + Math.random() * (that.width - element.radius * 2),
-                    element.radius + Math.random() * (that.height - element.radius * 2)
-                )
-            );
-
-        }
-    }
-    that.num_particles = that.particles.length;*/
-
 
 
     that.play = true;
@@ -323,7 +351,11 @@ Fluid.prototype.drawArc = function(x, y, radius, startAngle, endAngle){
     this.corners.push(this.arc);
 };
 
-
+/**
+ * Convert degrees to radians
+ * @param degrees
+ * @returns {number}
+ */
 Fluid.prototype.degreesToRadians = function(degrees) {
     return (degrees * Math.PI) / 180;
 };

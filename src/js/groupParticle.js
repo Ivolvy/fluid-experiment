@@ -9,7 +9,7 @@
  * @param intervalY
  * @constructor
  */
-var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
+var GroupParticle = function(elementTypeId, x, y, px, py){
     this.id = fluid.particlesCreated;
     this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
@@ -23,6 +23,9 @@ var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
     this.convertedFromLiquidFuel = false;
 
 
+    this.pass = false;
+    this.particleLimitInGroup = null;
+
     if(elementTypeId == type.gas.id){
         this.gravityX = 0;
         this.gravityY = 0;
@@ -32,17 +35,14 @@ var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
     }
 
 
-
-
-    this.intervalX = intervalX;
-    this.intervalY = intervalY;
+    this.subParticles = [];
 };
 
 /**
  * Handle the gravity
  */
-Particle.prototype.first_process = function () {
-
+GroupParticle.prototype.first_process = function () {
+    var that = this;
 
     var g = fluid.grid[Math.round(this.y / fluid.spacing) * fluid.num_x + Math.round(this.x / fluid.spacing)];
 
@@ -50,31 +50,93 @@ Particle.prototype.first_process = function () {
         g.close[g.length++] = this;
     }
 
-    //If the particle is a wall, we don't move it
-    if(this.elementTypeId == type.wall.id){
-        return;
+
+    if(this.y>300){
+        this.pass = true;
+
+      //  console.log(this.subParticles);
+
+
+        console.log(that.subParticles[0].x, that.subParticles[0].x);
+        that.subParticles.forEach(function(particle){
+            
+
+           //  console.log(that.particleLimitInGroup);
+
+            that.particleLimitInGroup = that.subParticles[that.subParticles.length-1];
+
+            //x rotation = cos(θ)⋅(x−cx) − sin(θ)⋅(y−cy)+cx ; θ in radians
+            //y rotation = sin(θ)⋅(x−cx) + cos(θ)⋅(y−cy)+cy
+
+            var rotatedX = ((particle.x - that.particleLimitInGroup.x) * Math.cos(fluid.degreesToRadians(-10))) -
+                ((particle.y - that.particleLimitInGroup.y) * Math.sin(fluid.degreesToRadians(-10))) + that.particleLimitInGroup.x;
+            var rotatedY = ((particle.x - that.particleLimitInGroup.x) * Math.sin(fluid.degreesToRadians(-10))) +
+                ((particle.y - that.particleLimitInGroup.y) * Math.cos(fluid.degreesToRadians(-10))) + that.particleLimitInGroup.y;
+
+
+
+            particle.x = rotatedX;
+            particle.y = rotatedY;
+
+        });
+
+        console.log(that.subParticles[0].x, that.subParticles[0].y);
+
+
+
+    } else{
+        if(this.pass){return;}
+        this.vx = this.x - this.px;
+        this.vy = this.y - this.py;
+
+        /*if (mouse.down) {
+         //here useful to interact with the fluid with mouse?
+         }*/
+
+        this.vx += this.gravityX;
+        this.vy += this.gravityY;
+        this.px = this.x;
+        this.py = this.y;
+        this.x += this.vx;
+        this.y += this.vy;
+
+
+        this.subParticles.forEach(function(particle){
+            /*
+             particle.vx = that.vx;
+             particle.vy = that.vy;
+             particle.px = that.px;
+             particle.py = that.py;
+             /!*  particle.x = particle.x;*!/
+             particle.y = that.y;
+             */
+
+
+
+            particle.vx = that.vx;
+            particle.vy = that.vy;
+
+            particle.px = that.px + particle.intervalX;
+            particle.py = that.py + particle.intervalY;
+            particle.x = that.x + particle.intervalX;
+            particle.y = that.y + particle.intervalY;
+        });
     }
 
-    this.vx = this.x - this.px;
-    this.vy = this.y - this.py;
 
-    /*if (mouse.down) {
-        //here useful to interact with the fluid with mouse?
-    }*/
 
-    this.vx += this.gravityX;
-    this.vy += this.gravityY;
-    this.px = this.x;
-    this.py = this.y;
-    this.x += this.vx;
-    this.y += this.vy;
+    this.draw();
+
+    this.subParticles.forEach(function(particle){
+        particle.draw();
+    });
 };
 
 
 /**
  * Handle the behavior between particles
  */
-Particle.prototype.second_process = function () {
+GroupParticle.prototype.second_process = function () {
 
     this.m = 0; //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
     this.force = 0;
@@ -105,14 +167,19 @@ Particle.prototype.second_process = function () {
 
     this.addForcesToParticles();
     this.checkBorderLimits();
+    /*    this.checkGroupBorderLimits();*/
 
     this.draw();
+
+    this.subParticles.forEach(function(particle){
+        particle.draw();
+    });
 };
 
 /**
  * Add calculated forces to particles
  */
-Particle.prototype.addForcesToParticles = function(){
+GroupParticle.prototype.addForcesToParticles = function(){
     var that = this;
 
     this.hasWaterNeighbor = 0;
@@ -136,11 +203,6 @@ Particle.prototype.addForcesToParticles = function(){
         for (var i = 0; i < this.close.length; i++) {
 
             var neighbor = this.close[i];
-
-
-            that.testEligibilityToFire(neighbor, i);
-            that.processWaterAndFire(neighbor);
-
 
             //Press is this.force to merge current element and neighbor
             var press = this.force + this.force_b * neighbor.m;
@@ -173,7 +235,7 @@ Particle.prototype.addForcesToParticles = function(){
 /**
  * Check border limits for the particle
  */
-Particle.prototype.checkBorderLimits = function(){
+GroupParticle.prototype.checkBorderLimits = function(){
     //Check if the particles are on the borders of the canvas
     if (this.x < fluid.limit) {
         if (settings.outflow) {
@@ -211,11 +273,63 @@ Particle.prototype.checkBorderLimits = function(){
 };
 
 
+GroupParticle.prototype.checkGroupBorderLimits = function(){
+    var that = this;
+
+    var limit = false;
+    this.subParticles.forEach(function(particle){
+        if (particle.x < fluid.limit) {
+            if (settings.outflow) {
+                if(particle.x < 0) {
+                    fluid.destroyParticle(this);
+                }
+            } else{
+                particle.x = fluid.limit;
+                limit = true;
+                that.particleLimitInGroup = particle;
+            }
+        } else if (particle.x > fluid.width - fluid.limit) {
+            if (settings.outflow) {
+                if(particle.x > fluid.width) { //Useful to not make the particles disappears instantly at extremes
+                    fluid.destroyParticle(this);
+                }
+            } else{
+                particle.x = fluid.width - fluid.limit;
+                limit = true;
+                that.particleLimitInGroup = particle;
+            }
+        }
+
+        if (particle.y < fluid.limit) {
+            if (settings.outflow) {
+                fluid.destroyParticle(this);
+            } else{
+                particle.y = fluid.limit;
+                limit = true;
+                that.particleLimitInGroup = particle;
+            }
+        } else if (particle.y > fluid.height - fluid.limit) {
+            if (settings.outflow) {
+                if(particle.y > fluid.height){
+                    fluid.destroyParticle(this);
+                }
+            } else{
+                particle.y = fluid.height - fluid.limit;
+                limit = true;
+                that.particleLimitInGroup = particle;
+            }
+        }
+    });
+
+    return limit;
+};
+
+
 /**
  * Process forces on particles
  * @param closeParticle
  */
-Particle.prototype.processForcesOnParticle = function(closeParticle){
+GroupParticle.prototype.processForcesOnParticle = function(closeParticle){
 
     this.xDistance = closeParticle.x - this.x;
     this.yDistance = closeParticle.y - this.y;
@@ -245,7 +359,7 @@ Particle.prototype.processForcesOnParticle = function(closeParticle){
  * Handle different forces for each particle
  * @param closeParticle
  */
-Particle.prototype.processForceForElement = function(closeParticle){
+GroupParticle.prototype.processForceForElement = function(closeParticle){
 
     //If the current particle is not a wall and the neighbor particle is a wall
     if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
@@ -274,117 +388,11 @@ Particle.prototype.processForceForElement = function(closeParticle){
 };
 
 
-/**
- * When water and fire meet
- * @param neighbor
- */
-Particle.prototype.processWaterAndFire = function(neighbor){
-
-    //If the particle is not already programmed to be destroyed
-    if(!this.willBeDestroyed && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
-
-        //7 => how close the particles must be
-        if((this.x + settings.maxDistanceForChemistry) >= neighbor.x && (this.x - settings.maxDistanceForChemistry) <= neighbor.x &&
-            (this.y + settings.maxDistanceForChemistry) >= neighbor.y && (this.y - settings.maxDistanceForChemistry) <= neighbor.y){
 
 
-            this.launchTimerToChemistryFromWaterAndFire(this, neighbor);
-            this.willBeDestroyed = true; //Set to true in order to not pass twice in destroy function
-        }
-    }
-};
 
 
-/**
- * Test eligibility to fire - if fire is near of liquidFuel and there is not so much water around
- * @param neighbor
- * @param increment
- */
-Particle.prototype.testEligibilityToFire = function(neighbor, increment){
-    var that = this;
-
-    //If the fire element has water neighbor, increase 1
-    if(this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.water.id){
-        this.hasWaterNeighbor += 1;
-    }
-    //If fire has neighbor liquidFuel, stock them
-    else if(this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.liquidFuel.id){
-        this.stockLiquidFire.push(neighbor);
-    }
-
-    //If we are at the end of the close particles
-    if(this.elementTypeId == type.fire.id && this.close.length-1 == increment){
-        //Test if there is less ... water neighbor
-        if(this.hasWaterNeighbor < settings.maxWaterAroundToTransformInFire){
-            //And transform stocked liquidFuel in Fire
-            this.stockLiquidFire.forEach(function(element){
-                that.processFireAndLiquidFuel(element);
-            });
-
-        }
-    }
-};
-
-
-/**
- * When fire meet liquidFuel
- * @param neighbor
- */
-Particle.prototype.processFireAndLiquidFuel = function(neighbor){
-
-    //If the particle is not already programmed to be destroyed
-    if(!neighbor.willBeConverted && this.elementTypeId == type.fire.id && neighbor.elementTypeId == type.liquidFuel.id){
-
-        //7 => how close the particles must be
-        if((this.x + settings.maxDistanceForChemistry) >= neighbor.x && (this.x - settings.maxDistanceForChemistry) <= neighbor.x &&
-            (this.y + settings.maxDistanceForChemistry) >= neighbor.y && (this.y - settings.maxDistanceForChemistry) <= neighbor.y){
-
-
-            this.launchTimerToChemistryFromFireAndLiquidFuel(this, neighbor);
-            this.willBeConverted = true; //Set to true in order to not pass twice in destroy function
-            this.convertedFromLiquidFuel = true;
-        }
-    }
-};
-
-
-/**
- * Launch Timer to create gas/liquidFuel with water and fire
- * @param currentParticle
- * @param neighbor
- */
-Particle.prototype.launchTimerToChemistryFromWaterAndFire = function(currentParticle, neighbor){
-    setTimeout(function(){
-        if(neighbor.elementTypeId == type.water.id) { //Double security
-            var randomChemistry = Math.floor((Math.random() * 5) + 1); //Between 1 and 3 options
-
-            if (randomChemistry == 1) {
-                element.createGas(currentParticle, neighbor);
-            } else if (randomChemistry == 2) {
-                element.createLiquidFuel(currentParticle, neighbor);
-            } else if(!currentParticle.convertedFromLiquidFuel){
-                fluid.destroyParticle(currentParticle);
-            }
-        }
-    }, 200);
-};
-
-/**
- * Launch Timer to create fire with fire and liquidFuel
- * @param currentParticle
- * @param neighbor
- */
-Particle.prototype.launchTimerToChemistryFromFireAndLiquidFuel = function(currentParticle, neighbor){
-    setTimeout(function(){
-        if(neighbor.elementTypeId == type.liquidFuel.id) { //Double security
-            neighbor.elementTypeId = type.fire.id;
-            element.processFire(neighbor);
-        }
-    }, 200);
-};
-
-
-Particle.prototype.draw = function () {
+GroupParticle.prototype.draw = function () {
 
     var size = element.radius * 2;
 

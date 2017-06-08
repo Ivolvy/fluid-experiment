@@ -53,6 +53,7 @@ Events.prototype.createElementsButtons = function(){
     new ElementButton('wall', 'wall', type.wall, false);
     new ElementButton('delete', 'delete', 'delete', false);
     new ElementButton('gas', 'gas', type.gas, false);
+    new ElementButton('rigid', 'rigid', type.rigid, false);
 };
 
 /**

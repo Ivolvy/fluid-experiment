@@ -82,11 +82,9 @@ Element.prototype.createLiquidFuel = function(currentParticle, neighbor){
  * Preload element for automatic chemical transformation
  */
 Element.prototype.preloadAllElements = function(){
-    element.createElement(type.water);
-    element.createElement(type.fire);
-    element.createElement(type.wall);
-    element.createElement(type.gas);
-    element.createElement(type.liquidFuel);
+    Object.keys(type.els).map(function(objectKey, index) {
+        element.createElement(type.els[objectKey]);
+    });
 };
 
 

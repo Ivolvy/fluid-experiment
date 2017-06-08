@@ -45,10 +45,11 @@ input{
 }
 
 #buttons{
-    margin-top: 40px;
+    margin-top: 30px;
     margin-left: 5px;
 
     .button{
+        margin-top: 10px;
         margin-left: 5px;
     }
 
@@ -67,6 +68,9 @@ input{
     #gas-button{
         @include element-button($gas-color);
     }
+    #rigid-button{
+        @include element-button($rigid-color);
+    }
 }
 
 #clear-button{
@@ -83,10 +87,10 @@ input{
     border-radius: 5px;
 
     background-color: $background-button-color;
-}
 
-#clear-button:active{
-    background-color: grey;
+    &:active{
+        background-color: grey;
+    }
 }
 
 #gravity-range{

@@ -7,7 +7,6 @@ var Settings = function(){};
 
 Settings.prototype.init = function(){
 
-
     this.baseGravityX     = 0; //bas gravity settings
     this.baseGravityY     = 1;
 
@@ -15,9 +14,7 @@ Settings.prototype.init = function(){
     this.GRAVITY_Y     = 1;
     this.gravityRange = 1; //Gravity range from the slider
 
-    this.GROUPS        = []; //Instantiate particles' tab - Nb of particles on start
     this.elementTypeId = 0; //Particles' color - current element type when drawing
-
 
     this.pauseOnDrawing = true; //Pause the game when we draw
     this.pauseGame = false; //Pause all the game

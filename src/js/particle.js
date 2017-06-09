@@ -10,7 +10,7 @@
  * @constructor
  */
 var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
-    this.id = fluid.particlesCreated;
+    this.id = fluid.particlesCreated += 1;
     this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
     this.y = y;

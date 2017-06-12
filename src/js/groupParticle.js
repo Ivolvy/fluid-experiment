@@ -161,14 +161,16 @@ GroupParticle.prototype.first_process = function () {
  * Move all particles with the leader
  */
 GroupParticle.prototype.moveSubParticles = function(){
+    var that = this;
+
     this.subParticles.forEach(function(particle){
-        particle.vx = this.vx;
-        particle.vy = this.vy;
+        particle.vx = that.vx;
+        particle.vy = that.vy;
         particle.px = particle.x;
         particle.py = particle.y;
 
-        particle.x = this.x - particle.xDiffFromLead;
-        particle.y = this.y - particle.yDiffFromLead;
+        particle.x = that.x - particle.xDiffFromLead;
+        particle.y = that.y - particle.yDiffFromLead;
     });
 };
 
@@ -317,6 +319,7 @@ GroupParticle.prototype.calculateXYParticlesFromLeader = function(leader, subPar
 
 
 GroupParticle.prototype.draw = function () {
+
     var size = element.radius * 2;
 
     fluid.meta_ctx.drawImage(

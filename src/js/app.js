@@ -97,15 +97,19 @@ Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
 
 
     var group =  new GroupParticle(type.fire.id, x, y);
-    group.subParticles.push(new Particle(elementTypeId, x+10, y+10, px, py, 10, 10));
-    group.subParticles.push(new Particle(elementTypeId, x+20, y+20, px, py, 20, 20));
-    group.subParticles.push(new Particle(elementTypeId, x+30, y+30, px, py, 30, 30));
-    group.subParticles.push(new Particle(elementTypeId, x+40, y+40, px, py, 40, 40));
-    group.subParticles.push(new Particle(elementTypeId, x+50, y+50, px, py, 50, 50));
+    group.subParticles.push(new Particle(elementTypeId, x+10, y+10));
+    group.subParticles.push(new Particle(elementTypeId, x+20, y+20));
+    group.subParticles.push(new Particle(elementTypeId, x+30, y+30));
+    group.subParticles.push(new Particle(elementTypeId, x+40, y+40));
+    group.subParticles.push(new Particle(elementTypeId, x+50, y+50));
 
 
     that.groupParticles.push(group);
     that.groupLength = that.groupParticles.length;
+
+
+
+    group.calculateXYParticlesFromLeader(group, group.subParticles);
 
 };
 
@@ -246,7 +250,7 @@ Fluid.prototype.init = function(canvas, w, h){
         }
     }
 
-    fluid.addGroupParticles(type.rigid.id, fluid.limit, fluid.limit, fluid.limit - 4);
+    fluid.addGroupParticles(type.rigid.id, 80, 20, fluid.limit - 4);
 
 
     //fluid.drawCorners(); - for future use (rebound particles on curved corners)
@@ -266,6 +270,12 @@ Fluid.prototype.initEvents = function(canvas){
     canvas.onmousedown = function(e) {
         mouse.down = true;
         mouse.mouseDrawing = true;
+    };
+
+    document.body.onkeydown = function(e){
+        if(e.keyCode == 32){
+            fluid.run();
+        }
     };
 
     document.onmouseup = function(e) { //on document 'cause we want to release fluid even if we are out canvas

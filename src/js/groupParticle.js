@@ -25,28 +25,36 @@ var GroupParticle = function(elementTypeId, x, y, px, py){
 
     this.pass = false;
     this.particleLimitInGroup = null;
+    this.previousParticleLimitInGroup = null;
 
     if(elementTypeId == type.gas.id){
         this.gravityX = 0;
         this.gravityY = 0;
     } else{
         this.gravityX = settings.GRAVITY_X;
-        this.gravityY = settings.GRAVITY_Y;
+        this.gravityY = settings.GRAVITY_Y*3;
     }
 
 
     this.subParticles = [];
 
 
-    this.damping = 0.45;
-    this.traction = 50;
+    this.damping = 0.55;
 
     this.limit = false;
-this.rebound= false;
-    this.previousXLeadValue = 0;
-    this.previousYLeadValue = 0;
-    this.changedXPosition = false;
-    this.changedYPosition = false;
+    this.rebound= false;
+    this.activeRotation = false;
+
+    this.angle = -10;
+    this.rotationWay = 1; //0 is clockwise and 1 is counterclockwise
+
+    this.stopRebound = false;
+
+
+
+
+    this.isCollide = false;
+
 };
 
 /**
@@ -55,40 +63,14 @@ this.rebound= false;
 GroupParticle.prototype.first_process = function () {
     var that = this;
 
-   /* if (this.x >= fluid.width - fluid.limit) {
-        this.vx = -this.vx * this.damping;
-        this.x = fluid.width - fluid.limit;
-
-    } else if (this.x - fluid.limit <= 0) {
-        this.vx = -this.vx * this.damping;
-        this.x = fluid.limit;
-    }
-
-    if (this.y >= fluid.height - fluid.limit) {
-        this.vy = -this.vy * this.damping;
-        this.y = fluid.height - fluid.limit;
-        // traction here
-
-
-    } else if (this.y - fluid.limit <= 0) {
-        this.vy = -this.vy * this.damping;
-        this.y = fluid.limit;
-    }
-
-    this.vy += this.gravityY;
-
-    this.x += this.vx;
-    this.y += this.vy;*/
-
-
     if(this.checkBorderLimits()){
         //Doesn't pass here
         console.log("CHECK BORDER LIMITS");
 
     } else{
 
-        this.previousXLeadValue = this.px;
-        this.previousYLeadValue = this.py;
+
+        this.prevVy = this.vy;
 
 
         if(!this.rebound) {
@@ -101,6 +83,21 @@ GroupParticle.prototype.first_process = function () {
             this.py = this.y;
             this.x += this.vx;
             this.y += this.vy;
+
+
+            //Move all particles with the leader
+            this.subParticles.forEach(function(particle){
+
+                particle.vx = that.vx;
+                particle.vy = that.vy;
+                particle.px = particle.x;
+                particle.py = particle.y;
+
+
+
+                particle.x = that.x - particle.xDiffFromLead;
+                particle.y = that.y - particle.yDiffFromLead;
+            });
 
 
         }
@@ -117,8 +114,6 @@ GroupParticle.prototype.first_process = function () {
             if (that.y >= fluid.height - fluid.limit) {
                 that.vy = -that.vy * that.damping;
                 that.y = fluid.height - fluid.limit;
-                // traction here
-
 
             } else if (that.y - fluid.limit <= 0) {
                 that.vy = -that.vy * that.damping;
@@ -133,41 +128,55 @@ GroupParticle.prototype.first_process = function () {
             that.y += that.vy;
 
 
-            if(that.particleLimitInGroup == null){
+            //Move all particles with the leader
+            this.subParticles.forEach(function(particle){
+                particle.vx = that.vx;
+                particle.vy = that.vy;
+                particle.px = particle.x;
+                particle.py = particle.y;
+
+                particle.x = that.x - particle.xDiffFromLead;
+                particle.y = that.y - particle.yDiffFromLead;
+            });
+
+
+            if(that.activeRotation == true){
                 that.subParticles.forEach(function(particle){
-                    //  console.log(that.particleLimitInGroup);
-                    that.particleLimitInGroup = that.subParticles[that.subParticles.length-1];
 
                     //x rotation = cos(θ)⋅(x−cx) − sin(θ)⋅(y−cy)+cx ; θ in radians
                     //y rotation = sin(θ)⋅(x−cx) + cos(θ)⋅(y−cy)+cy
 
-                    var rotatedX = ((particle.x - that.particleLimitInGroup.x) * Math.cos(fluid.degreesToRadians(-10))) -
-                        ((particle.y - that.particleLimitInGroup.y) * Math.sin(fluid.degreesToRadians(-10))) + that.particleLimitInGroup.x;
-                    var rotatedY = ((particle.x - that.particleLimitInGroup.x) * Math.sin(fluid.degreesToRadians(-10))) +
-                        ((particle.y - that.particleLimitInGroup.y) * Math.cos(fluid.degreesToRadians(-10))) + that.particleLimitInGroup.y;
+
+                    if(that.rotationWay == 0){
+                        if(Math.sign(that.angle) == -1){
+                            that.angle = that.angle*-1; //put to positive
+                        }
+                    } else{
+                        if(Math.sign(that.angle) == 1){
+                            that.angle = that.angle*-1; //put to negative
+                        }
+                    }
+
+
+                    var rotatedX = ((particle.x - that.x) * Math.cos(fluid.degreesToRadians(that.angle))) -
+                        ((particle.y - that.y) * Math.sin(fluid.degreesToRadians(that.angle))) + that.x;
+                    var rotatedY = ((particle.x - that.x) * Math.sin(fluid.degreesToRadians(that.angle))) +
+                        ((particle.y - that.y) * Math.cos(fluid.degreesToRadians(that.angle))) + that.y;
 
                     particle.x = rotatedX;
                     particle.y = rotatedY;
                 });
 
+               //that.angle *= 0.95;
+
+               // console.log(that.angle);
+
+                that.calculateXYParticlesFromLeader(that, that.subParticles);
             }
 
 
 
-        }
 
-        if(this.previousYLeadValue == this.py){
-            this.changedYPosition = false;
-
-        } else{
-            this.changedYPosition = true;
-        }
-
-        if(this.previousXLeadValue == this.px){
-            this.changedXPosition = false;
-
-        } else{
-            this.changedXPosition = true;
         }
 
 
@@ -179,7 +188,7 @@ GroupParticle.prototype.first_process = function () {
 
 
 
-    this.draw();
+   // this.draw();
 
     this.subParticles.forEach(function(particle){
         particle.draw();
@@ -190,69 +199,133 @@ GroupParticle.prototype.first_process = function () {
 GroupParticle.prototype.followLeader = function(){
     var that = this;
 
-    if(that.checkIfSubParticleCollideBorder()){
 
-console.log(that.particleLimitInGroup.id);
-        that.y = that.particleLimitInGroup.y;
+
+
+
+    if(that.checkIfSubParticleCollideBorder() && this.stopRebound == false){
+
+        //console.log(that.particleLimitInGroup.id);
+
         that.x = that.particleLimitInGroup.x;
+        that.y = that.particleLimitInGroup.y;
         that.px = that.particleLimitInGroup.px;
         that.py = that.particleLimitInGroup.py;
 
 
+        if(that.previousParticleLimitInGroup == null || (that.previousParticleLimitInGroup.id != that.particleLimitInGroup.id)){
+            console.log("recalcul");
+            that.calculateXYParticlesFromLeader(that, that.subParticles);
+        }
+        that.previousParticleLimitInGroup = that.particleLimitInGroup;
+
         this.rebound = true;
+        this.activeRotation = true;
 
 
     } else{
         that.particleLimitInGroup = null;
+        that.isCollide = false;
     }
-
-    this.subParticles.forEach(function(particle){
-
-        particle.vx = that.vx;
-        particle.vy = that.vy;
-        particle.px = particle.x;
-        particle.py = particle.y;
-        particle.x = particle.x + (that.x - that.px);
-
-
-        if(that.changedYPosition && that.limit == false){
-            particle.y = particle.y + (that.y - that.py);
-        }
-    });
 
 };
 
-
+/**
+ * Check if any of the subParticles collide with a border
+ * @returns {*}
+ */
 GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
     var that = this;
 
     that.limit = false;
 
     if(!settings.outflow){
-        this.subParticles.forEach(function(particle){
 
-    /*    if(that.limit){  //TODO: activate this and pass that.x/y to particle.X/Y
-            return;
-        }*/
 
-            if (that.x < fluid.limit) {
-                that.limit = true;
-                that.particleLimitInGroup = particle;
-            } else if (that.x > fluid.width - fluid.limit) {
-                that.limit = true;
-                that.particleLimitInGroup = particle;
+        this.subParticles.forEach(function(particle, currentPosition){
+
+            var particleHasChanged = false;
+
+
+            if(that.limit){
+
+                for (var i = currentPosition; i < that.subParticles.length - 1; i++) {
+
+                    if (particle.x < fluid.limit || particle.x > fluid.width - fluid.limit) {
+                        that.particleLimitInGroup = particle;
+                        particleHasChanged = true;
+                        break;
+                    }
+                    if ((particle.y < fluid.limit) || (particle.y > fluid.height - fluid.limit)) {
+                        that.particleLimitInGroup = particle;
+                        particleHasChanged = true;
+                        break;
+                    }
+
+                }
+
+                if(!particleHasChanged){
+                    return;
+                } else{
+                    console.log("particleHasChanged: "+particleHasChanged);
+
+                    if(this.prevVy == this.vy && that.isCollide && particle.isCollide){
+                        that.angle = 0;
+                    }
+
+
+                }
+
             }
 
-            if (that.y < fluid.limit) {
+           // console.log(particle.id);
+            if (particle.x < fluid.limit) {
                 that.limit = true;
                 that.particleLimitInGroup = particle;
-            } else if (that.y > fluid.height - fluid.limit) {
+                console.log("COLLISION X");
+            } else if (particle.x > fluid.width - fluid.limit) {
                 that.limit = true;
                 that.particleLimitInGroup = particle;
+                console.log("COLLISION X");
+            }
+
+            if (particle.y < fluid.limit) {
+                that.limit = true;
+                that.particleLimitInGroup = particle;
+                console.log("COLLISION Y");
+            } else if (particle.y > fluid.height - fluid.limit) {
+                that.limit = true;
+                that.particleLimitInGroup = particle;
+                console.log("COLLISION Y");
+
+
+                that.isCollide = true;
+                particle.isCollide = true;
+
+
+                if(currentPosition <= (that.subParticles.length - currentPosition)){
+
+                    if(that.subParticles[that.subParticles.length - 1].x >= that.subParticles[currentPosition].x){
+                        that.rotationWay = 0;
+                    } else{
+                        that.rotationWay = 1;
+                    }
+
+                } else if(currentPosition > (that.subParticles.length - currentPosition)){
+
+                    if(that.subParticles[0].x >= that.subParticles[currentPosition].x){
+                        that.rotationWay = 0;
+                    } else{
+                        that.rotationWay = 1;
+                    }
+                }
+
+            } else {
+                particle.isCollide = false;
             }
 
         });
-
+       // console.log(that.particleLimitInGroup);
     }
 
     return that.limit;
@@ -295,6 +368,18 @@ GroupParticle.prototype.checkBorderLimits = function(){
         }
     }
 };
+
+
+/**
+ * Useful to make all particles follow the leader when the leader change his position
+ */
+GroupParticle.prototype.calculateXYParticlesFromLeader = function(leader, subParticles){
+    subParticles.forEach(function(particle){
+        particle.xDiffFromLead = leader.x - particle.x;
+        particle.yDiffFromLead = leader.y - particle.y;
+    });
+};
+
 
 
 GroupParticle.prototype.draw = function () {

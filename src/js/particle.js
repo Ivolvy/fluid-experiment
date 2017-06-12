@@ -5,11 +5,9 @@
  * @param y
  * @param px
  * @param py
- * @param intervalX
- * @param intervalY
  * @constructor
  */
-var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
+var Particle = function(elementTypeId, x, y, px, py){
     this.id = fluid.particlesCreated += 1;
     this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
@@ -22,6 +20,11 @@ var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
     this.willBeConverted = false;
     this.convertedFromLiquidFuel = false;
 
+    this.xDiffFromLead = 0;
+    this.yDiffFromLead = 0;
+
+    this.isCollide = false;
+
 
     if(elementTypeId == type.gas.id){
         this.gravityX = 0;
@@ -32,10 +35,6 @@ var Particle = function(elementTypeId, x, y, px, py, intervalX, intervalY){
     }
 
 
-
-
-    this.intervalX = intervalX;
-    this.intervalY = intervalY;
 };
 
 /**

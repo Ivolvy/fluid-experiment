@@ -41,7 +41,7 @@ Mouse.prototype.process = function(){
     //Test the distance between two points and if it increase or decrease
     this.diff = this.currentX - this.previousX;
     this.xDiff = Math.abs(this.diff);
-    this.increaseValueX = Math.sign(this.diff) == 1; //if == 1 -> true ; else -> false
+    this.increaseValueX = Math.sign(this.diff) == 1; //if == 1 -> true ; else -> false | 1: positive number | -1: negative number
 
     this.diff = this.currentY - this.previousY;
     this.yDiff = Math.abs(this.diff);

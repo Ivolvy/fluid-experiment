@@ -20,10 +20,10 @@ var Particle = function(elementTypeId, x, y, px, py){
     this.willBeConverted = false;
     this.convertedFromLiquidFuel = false;
 
-    this.xDiffFromLead = 0;
+    this.xDiffFromLead = 0; //Diff X from leader if the particle is in a group
     this.yDiffFromLead = 0;
 
-    this.isCollide = false;
+    this.isCollide = false; //Is the particle collide or not
 
 
     if(elementTypeId == type.gas.id){
@@ -384,7 +384,6 @@ Particle.prototype.launchTimerToChemistryFromFireAndLiquidFuel = function(curren
 
 
 Particle.prototype.draw = function () {
-
     var size = element.radius * 2;
 
     fluid.meta_ctx.drawImage(

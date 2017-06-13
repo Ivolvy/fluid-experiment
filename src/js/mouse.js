@@ -104,8 +104,15 @@ Mouse.prototype.process = function(){
 
             mouse.testReplaceParticles(this.x, this.y);
 
-            //Create particles on mouse position
-            fluid.addParticle(settings.elementTypeId,this.x, this.y);
+
+            //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
+            if(settings.elementTypeId == type.els.rigid.id){
+                fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(settings.elementTypeId, this.x, this.y));
+            } else{
+                //Create particles on mouse position
+                fluid.addParticle(settings.elementTypeId, this.x, this.y);
+            }
+
 
             this.previousX = this.x;
             this.previousY = this.y;
@@ -126,8 +133,14 @@ Mouse.prototype.drawXMissingParticles = function(drawX){
 
     mouse.testReplaceParticles(drawX, this.previousY);
 
-    //Create particles on mouse position
-    fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
+
+    //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
+    if(settings.elementTypeId == type.els.rigid.id){
+        fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(settings.elementTypeId, drawX, this.previousY));
+    } else{
+        //Create particles on mouse position
+        fluid.addParticle(settings.elementTypeId, drawX, this.previousY);
+    }
 
 
     this.finalX = drawX; //last position
@@ -146,8 +159,15 @@ Mouse.prototype.drawYMissingParticles = function(drawY){
 
     mouse.testReplaceParticles(this.previousX, drawY);
 
-    //Create particles on mouse position
-    fluid.addParticle(settings.elementTypeId,this.previousX, drawY);
+
+    //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
+    if(settings.elementTypeId == type.els.rigid.id){
+        fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(settings.elementTypeId, this.previousX, drawY));
+    } else{
+        //Create particles on mouse position
+        fluid.addParticle(settings.elementTypeId, this.previousX, drawY);
+    }
+
 
     this.finalX = this.previousX; //last position
     this.finalY = drawY; //last position

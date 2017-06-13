@@ -5,8 +5,6 @@
  * @param y
  * @param px
  * @param py
- * @param intervalX
- * @param intervalY
  * @constructor
  */
 var GroupParticle = function(elementTypeId, x, y, px, py){
@@ -147,15 +145,17 @@ GroupParticle.prototype.first_process = function () {
     }
 
     that.followLeader();
+};
 
 
-   // this.draw();
+GroupParticle.prototype.second_process = function () {
+
+    // this.draw();
 
     this.subParticles.forEach(function(particle){
         particle.draw();
     });
 };
-
 
 /**
  * Move all particles with the leader
@@ -220,7 +220,6 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
     if(!settings.outflow){
 
         this.subParticles.forEach(function(particle, currentPosition){
-
             var particleHasChanged = false;
 
             //If a particle collided with a border
@@ -240,7 +239,6 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
                         particleHasChanged = true;
                         break;
                     }
-
                 }
 
                 //If there is a new collide particle
@@ -255,7 +253,6 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
 
             }
 
-           // console.log(particle.id);
 
             /**
              * Test if the particle collide with a border

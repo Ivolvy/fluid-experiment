@@ -34,7 +34,7 @@ var Fluid = function(){
     this.corners = [];
 
 
-
+    this.currentGroupParticle = null;
     this.groupParticles = [];
     this.groupLength = 0;
 };
@@ -53,9 +53,9 @@ Fluid.prototype.process_image = function() {
     that.ctx.putImageData(imageData, 0, 0);
 
 
-    that.corners.forEach(function(arc){
+    /*that.corners.forEach(function(arc){
         arc.draw();
-    });
+    });*/
 
 };
 
@@ -86,17 +86,16 @@ Fluid.prototype.addParticle = function(elementTypeId,x, y, px, py) {
     }
 
     that.num_particles = that.particles.length;
-    //that.particlesCreated +=1;
 };
 
 
-
+//USefull for debug and tests
 Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
     var that = this;
 
 
 
-    var group =  new GroupParticle(type.fire.id, x, y);
+    var group =  new GroupParticle(type.fire.id, x, y,x+2);
     group.subParticles.push(new Particle(elementTypeId, x+10, y+10));
     group.subParticles.push(new Particle(elementTypeId, x+20, y+20));
     group.subParticles.push(new Particle(elementTypeId, x+30, y+30));
@@ -115,6 +114,29 @@ Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
 
 
 /**
+ * Create a group element to contains particles
+ * @param elementTypeId
+ * @param x
+ * @param y
+ */
+Fluid.prototype.createGroupParticles = function(elementTypeId,x, y) {
+    this.currentGroupParticle =  new GroupParticle(type.rigid.id, x, y);
+
+    this.groupParticles.push(this.currentGroupParticle);
+    this.groupLength = this.groupParticles.length;
+};
+
+/**
+ * Close a group element of particles
+ */
+Fluid.prototype.closeGroupParticles = function() {
+    //Calculate all particles coordinates
+    this.currentGroupParticle.calculateXYParticlesFromLeader(this.currentGroupParticle, this.currentGroupParticle.subParticles);
+    this.currentGroupParticle = null;
+};
+
+
+/**
  * Delete particle outside canvas
  * @param obj
  */
@@ -128,20 +150,14 @@ Fluid.prototype.destroyParticle = function(obj) {
         }
     }
 
-  /*  that.particles.splice(that.particles.indexOf(obj), 1);*/
     that.num_particles = that.particles.length;
 };
 
-Fluid.prototype.run = function () {
-    var that = fluid.context;
-
-    //var time = new Date().getTime();
-    that.meta_ctx.clearRect(0, 0, that.width, that.height);
-
-    for (var i = 0, l = that.num_x * that.num_y; i < l; i++){
-        that.grid[i].length = 0;
-    }
-
+/**
+ * Calculate particles movements and display them
+ */
+Fluid.prototype.calculateAndDisplayParticles = function(){
+    var that = this;
 
     var i = that.num_particles;
     var y = that.groupLength;
@@ -158,24 +174,37 @@ Fluid.prototype.run = function () {
                 that.groupParticles[y].first_process();
             }
         }
-
     }
 
     i = that.num_particles;
-    y = that.groupLength;
     while (i--) {
         if(that.particles[i]) {
             that.particles[i].second_process();
         }
     }
 
-  /*  while(y--){
+    y = that.groupLength;
+    while(y--){
         if(that.groupParticles[y]){
             that.groupParticles[y].second_process();
         }
     }
-*/
+};
 
+
+Fluid.prototype.run = function () {
+    var that = fluid.context;
+
+    //var time = new Date().getTime();
+    that.meta_ctx.clearRect(0, 0, that.width, that.height);
+
+    for (var i = 0, l = that.num_x * that.num_y; i < l; i++){
+        that.grid[i].length = 0;
+    }
+
+
+
+    fluid.calculateAndDisplayParticles();
     fluid.process_image();
 
 
@@ -250,7 +279,7 @@ Fluid.prototype.init = function(canvas, w, h){
         }
     }
 
-    fluid.addGroupParticles(type.rigid.id, 80, 20, fluid.limit - 4);
+    //fluid.addGroupParticles(type.rigid.id, 80, 20, fluid.limit - 4);
 
 
     //fluid.drawCorners(); - for future use (rebound particles on curved corners)
@@ -267,11 +296,19 @@ Fluid.prototype.init = function(canvas, w, h){
  * @param canvas
  */
 Fluid.prototype.initEvents = function(canvas){
+    var that = this;
+
     canvas.onmousedown = function(e) {
         mouse.down = true;
         mouse.mouseDrawing = true;
+
+        //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
+        if(settings.elementTypeId == type.els.rigid.id){
+            fluid.createGroupParticles(settings.elementTypeId, mouse.x, mouse.y); //todo: check if mouse x and y are correct
+        }
     };
 
+    //Useful for debug - deactivate requestAnimFrame(fluid.run); and press spacebar
     document.body.onkeydown = function(e){
         if(e.keyCode == 32){
             fluid.run();
@@ -285,6 +322,12 @@ Fluid.prototype.initEvents = function(canvas){
         //reset mouse positions
         mouse.previousX = 0;
         mouse.previousY = 0;
+
+
+        //If there is a current group particle, close it
+        if(that.currentGroupParticle != null){
+            fluid.closeGroupParticles();
+        }
     };
 
     canvas.onmousemove = function(e) {
@@ -322,6 +365,8 @@ Fluid.prototype.resume = function(){
 Fluid.prototype.eraseAllParticles = function(){
     this.particles = []; //reset
     this.num_particles = this.particles.length; //reset
+    this.groupParticles = [];
+    this.groupLength = this.groupParticles.length;
 };
 
 

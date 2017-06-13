@@ -30,6 +30,7 @@ var Fluid = function(){
     this.num_particles = 0;
 
     this.particlesCreated = 0;
+    this.idGroupParticlesCreated = 0;
 
     this.corners = [];
 
@@ -89,7 +90,7 @@ Fluid.prototype.addParticle = function(elementTypeId,x, y, px, py) {
 };
 
 
-//USefull for debug and tests
+//Useful for debug and tests
 Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
     var that = this;
 
@@ -172,6 +173,10 @@ Fluid.prototype.calculateAndDisplayParticles = function(){
         while(y--){
             if(that.groupParticles[y]){
                 that.groupParticles[y].first_process();
+
+                that.groupParticles[y].subParticles.forEach(function(particle){
+                    particle.first_process();
+                });
             }
         }
     }
@@ -187,6 +192,11 @@ Fluid.prototype.calculateAndDisplayParticles = function(){
     while(y--){
         if(that.groupParticles[y]){
             that.groupParticles[y].second_process();
+
+            //Check all subParticles of each groupParticles
+            that.groupParticles[y].subParticles.forEach(function(particle){
+                particle.second_process();
+            });
         }
     }
 };
@@ -303,7 +313,7 @@ Fluid.prototype.initEvents = function(canvas){
         mouse.mouseDrawing = true;
 
         //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
-        if(settings.elementTypeId == type.els.rigid.id){
+        if(settings.elementTypeId == type.rigid.id){
             fluid.createGroupParticles(settings.elementTypeId, mouse.x, mouse.y); //todo: check if mouse x and y are correct
         }
     };

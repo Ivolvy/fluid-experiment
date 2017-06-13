@@ -9,6 +9,8 @@
  */
 var Particle = function(elementTypeId, x, y, px, py){
     this.id = fluid.particlesCreated += 1;
+    this.groupParentId = null; //Useful to know the groupParent id if there is one
+
     this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
     this.y = y;
@@ -50,7 +52,7 @@ Particle.prototype.first_process = function () {
     }
 
     //If the particle is a wall, we don't move it
-    if(this.elementTypeId == type.wall.id){
+    if(this.elementTypeId == type.wall.id || this.elementTypeId == type.rigid.id){
         return;
     }
 
@@ -76,6 +78,14 @@ Particle.prototype.first_process = function () {
 Particle.prototype.second_process = function () {
 
     this.m = 0; //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
+
+
+    fluid.groupParticles.forEach(function(groupParticle){
+        groupParticle.m = 0;
+    });
+
+
+
     this.force = 0;
     this.force_b = 0;
 
@@ -103,7 +113,12 @@ Particle.prototype.second_process = function () {
 
 
     this.addForcesToParticles();
-    this.checkBorderLimits();
+
+
+    if(this.elementTypeId != type.rigid.id){
+        this.checkBorderLimits();
+    }
+
 
     this.draw();
 };
@@ -164,6 +179,33 @@ Particle.prototype.addForcesToParticles = function(){
             if(this.elementTypeId != type.wall.id && neighbor.elementTypeId == type.wall.id){
                 this.x -= dx;
                 this.y -= dy;
+            }
+            if(this.elementTypeId != type.rigid.id && neighbor.elementTypeId == type.rigid.id){
+                this.x -= dx;
+                this.y -= dy;
+            }
+
+            if(this.elementTypeId == type.rigid.id && neighbor.elementTypeId == type.rigid.id){
+
+                //If the particle doesn't belong to the same group
+                if(this.groupParentId != neighbor.groupParentId){
+
+   /*                 console.log(fluid.groupParticles);
+                    console.log(this.groupParentId);
+
+                    //If the groupParticle with the given id exists
+                    for(var i=0 ; i < fluid.groupParticles.length; i++){  //todo to get the real position of particles in group
+                        if(fluid.groupParticles[i].id == this.groupParentId) {
+                            fluid.groupParticles[i].x -= dx;
+                            fluid.groupParticles[i].y -= dy;
+                        }
+                    }
+*/
+                    fluid.groupParticles[this.groupParentId-1].x -= dx;
+                    fluid.groupParticles[this.groupParentId-1].y -= dy;
+
+                }
+
             }
         }
     }
@@ -246,8 +288,25 @@ Particle.prototype.processForcesOnParticle = function(closeParticle){
  */
 Particle.prototype.processForceForElement = function(closeParticle){
 
+
+    if(closeParticle != this && this.elementTypeId != type.rigid.id && closeParticle.elementTypeId == type.rigid.id){
+        this.m = 1 - (this.distance / fluid.spacing);
+        this.force += 1;
+        this.force_b += 1;
+    }
+
+    else if(closeParticle != this && this.elementTypeId == type.rigid.id && closeParticle.elementTypeId == type.rigid.id){
+
+        //If the particle doesn't belong to the same group
+        if(this.groupParentId != closeParticle.groupParentId) {
+            this.m = 0.1;
+            this.force += 0.5;
+            this.force_b += 0.5;
+        }
+    }
+
     //If the current particle is not a wall and the neighbor particle is a wall
-    if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
+    else if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
         this.m = 1 - (this.distance / fluid.spacing);
         this.force += 1;
         this.force_b += 1;

@@ -8,7 +8,7 @@
  * @constructor
  */
 var GroupParticle = function(elementTypeId, x, y, px, py){
-    this.id = fluid.particlesCreated;
+    this.id = fluid.idGroupParticlesCreated += 1;
     this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
     this.y = y;
@@ -16,6 +16,8 @@ var GroupParticle = function(elementTypeId, x, y, px, py){
     this.py = py ? py : y; //py -> previous y
     this.vx = 0; //velocity
     this.vy = 0;
+    this.dfx = 1;
+    this.dfy = 1;
     this.willBeDestroyed = false;
     this.willBeConverted = false;
     this.convertedFromLiquidFuel = false;
@@ -60,12 +62,17 @@ GroupParticle.prototype.first_process = function () {
 
     this.prevVy = this.vy;
 
+
     if(!this.rebound) {
         this.vx = this.x - this.px;
         this.vy = this.y - this.py;
 
         this.vx += this.gravityX;
         this.vy += this.gravityY;
+
+        this.vx = this.vx * this.dfx;
+        this.vy = this.vy * this.dfy;
+
         this.px = this.x;
         this.py = this.y;
         this.x += this.vx;
@@ -144,13 +151,15 @@ GroupParticle.prototype.first_process = function () {
 
     }
 
+
     that.followLeader();
 };
 
 
 GroupParticle.prototype.second_process = function () {
-
+    this.m = 0;
     // this.draw();
+
 
     this.subParticles.forEach(function(particle){
         particle.draw();

@@ -370,13 +370,15 @@ Fluid.prototype.resume = function(){
 
 
 /**
- * Erase all particles
+ * Erase all particles and reset ids
  */
 Fluid.prototype.eraseAllParticles = function(){
     this.particles = []; //reset
     this.num_particles = this.particles.length; //reset
     this.groupParticles = [];
     this.groupLength = this.groupParticles.length;
+    this.particlesCreated = 0;
+    this.idGroupParticlesCreated = 0;
 };
 
 

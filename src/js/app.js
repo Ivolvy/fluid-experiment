@@ -94,8 +94,6 @@ Fluid.prototype.addParticle = function(elementTypeId,x, y, px, py) {
 Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
     var that = this;
 
-
-
     var group =  new GroupParticle(type.fire.id, x, y,x+2);
     group.subParticles.push(new Particle(elementTypeId, x+10, y+10));
     group.subParticles.push(new Particle(elementTypeId, x+20, y+20));
@@ -108,9 +106,7 @@ Fluid.prototype.addGroupParticles = function(elementTypeId,x, y, px, py) {
     that.groupLength = that.groupParticles.length;
 
 
-
     group.calculateXYParticlesFromLeader(group, group.subParticles);
-
 };
 
 
@@ -314,7 +310,7 @@ Fluid.prototype.initEvents = function(canvas){
 
         //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
         if(settings.elementTypeId == type.rigid.id){
-            fluid.createGroupParticles(settings.elementTypeId, mouse.x, mouse.y); //todo: check if mouse x and y are correct
+            fluid.createGroupParticles(settings.elementTypeId, mouse.x, mouse.y);
         }
     };
 

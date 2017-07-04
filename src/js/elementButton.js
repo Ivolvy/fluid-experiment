@@ -1,3 +1,8 @@
+
+var settings = require('./settings.js');
+var events = require('./events.js');
+
+
 /**
  * Create an element button selector
  * @param elementName
@@ -41,12 +46,28 @@ var ElementButton = function(elementName, text, associatedElement, isDefault){
  */
 ElementButton.prototype.testAssociatedElement = function(buttonEl, associatedElement){
     if(associatedElement == "delete"){
-        events.resetButtons();
+        this.resetButtons();
         buttonEl.classList.add("active");
         settings.wipe = true;
     } else{
-        events.resetButtons();
+        this.resetButtons();
         buttonEl.classList.add("active");
         settings.elementTypeId = associatedElement.id;
     }
 };
+
+/**
+ * Reset Buttons
+ */
+ElementButton.prototype.resetButtons = function(){
+    var elements = document.getElementsByClassName("active");
+
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].classList.remove("active");
+    }
+
+    settings.wipe = false; //disable wipe
+};
+
+
+module.exports = ElementButton;

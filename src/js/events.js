@@ -1,3 +1,10 @@
+
+var fluid = require('./fluid.js');
+var settings = require('./settings.js');
+var type = require('./type.js');
+var ElementButton = require('./elementButton.js');
+
+
 /**
  * All DOM events
  * @constructor
@@ -5,7 +12,8 @@
 var Events = function(){};
 
 
-Events.prototype.init = function(){
+Events.prototype.init = function(app){
+
     this.$els = {
         gravityRange: document.getElementById('gravity-range'),
         pauseOnDrawingInput: document.getElementById('pauseOnDrawing').getElementsByTagName('input')[0],
@@ -16,10 +24,10 @@ Events.prototype.init = function(){
         clearButton: document.getElementById('clear-button')
     };
 
-    events.inputsEvents();
+    events.inputsEvents(app);
     events.createElementsButtons();
     events.buttonsEvents();
-    events.gravityEvents();
+    events.gravityEvents(app);
 
 };
 
@@ -27,13 +35,15 @@ Events.prototype.init = function(){
 /**
  * Create inputs events
  */
-Events.prototype.inputsEvents = function(){
+Events.prototype.inputsEvents = function(app){
+    var that = this;
+
     this.$els.pauseOnDrawingInput.onclick = function(e) {
         settings.pauseOnDrawing = !settings.pauseOnDrawing;
     };
     this.$els.pauseGameInput.onclick = function(e) {
         settings.pauseGame = !settings.pauseGame;
-        if(!settings.pauseGame){fluid.resume();}
+        if(!settings.pauseGame){app.resume();}
     };
     this.$els.outflowInput.onclick = function(e) {
         settings.outflow = !settings.outflow;
@@ -70,7 +80,7 @@ Events.prototype.buttonsEvents = function(){
 /**
  * Gravity Events
  */
-Events.prototype.gravityEvents = function(){
+Events.prototype.gravityEvents = function(app){
     var that = this;
 
     this.$els.gravityInput.onclick = function(e) {
@@ -93,25 +103,11 @@ Events.prototype.gravityEvents = function(){
     };
     this.$els.gravityRange.onmouseup = function(e) {
         settings.pauseGame = false;
-        fluid.resume();
+        app.resume();
     };
-};
-
-
-/**
- * Reset Buttons
- */
-Events.prototype.resetButtons = function(){
-    var elements = document.getElementsByClassName("active");
-
-    for (var i = 0; i < elements.length; i++) {
-        elements[i].classList.remove("active");
-    }
-
-    settings.wipe = false; //disable wipe
 };
 
 
 
 var events = new Events();
-events.init();
+module.exports = events;

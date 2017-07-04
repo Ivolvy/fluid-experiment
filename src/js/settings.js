@@ -7,6 +7,9 @@ var Settings = function(){};
 
 Settings.prototype.init = function(){
 
+    this.width = 0;
+    this.height = 0;
+
     this.baseGravityX     = 0; //bas gravity settings
     this.baseGravityY     = 1;
 
@@ -45,6 +48,17 @@ Settings.prototype.enableGravity = function(){
     this.GRAVITY_Y = this.baseGravityY;
 };
 
+/**
+ * Convert degrees to radians
+ * @param degrees
+ * @returns {number}
+ */
+Settings.prototype.degreesToRadians = function(degrees) {
+    return (degrees * Math.PI) / 180;
+};
+
 
 var settings = new Settings();
+module.exports = settings;
 settings.init();
+

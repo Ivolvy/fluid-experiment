@@ -5,17 +5,24 @@
   "scripts": {
     "scss": "node-sass --output-style nested --indent-type tab --indent-width 1 -o dist/css src/scss",
     "autoprefixer": "postcss -u autoprefixer --autoprefixer.browsers '&gt; 5%, ie 9' -r dist/css/*",
-    "uglify": "mkdir -p dist/js && uglifyjs src/js/*.js -m -b -o dist/js/app.js && uglifyjs src/js/*.js -m -c -o dist/js/app.min.js",
-    "serve": "browser-sync start --server --files 'dist/css/*.css, dist/js/*.js'",
+    "uglify": "mkdir -p dist/js && uglifyjs dist/js/bundle.js -m -b -o dist/js/app.js && uglifyjs dist/js/bundle.js -m -c -o dist/js/app.min.js",
+    "serve": "browser-sync start --server --files 'dist/css/*.css, dist/js/bundle.js'",
     "build:css": "npm run scss && npm run autoprefixer",
     "watch:css": "onchange 'src/scss/*.scss' -- npm run build:css",
-    "watch:js": "onchange 'src/js/*.js' -- npm run uglify",
+    "watch:js": "onchange 'src/js/*.js' -- npm run browserifyRequires",
+    "watch:bundle": "onchange 'dist/js/bundle.js' -- npm run uglify",
     "postinstall": "npm run build:css && npm run uglify",
-    "start": "parallelshell 'npm run serve' 'npm run watch:css' 'npm run watch:js'"
+    "start": "npm run browserifyRequires && parallelshell 'npm run serve' 'npm run watch:css' 'npm run watch:bundle' 'npm run watch:js'",
+    "buildBabel": "babel 'src/js/' -d 'dist/js/'",
+    "browserifyRequires": "mkdir -p dist/js && browserify 'src/js/app.js' > 'dist/js/bundle.js'",
+    "preloadProject": "npm run browserifyRequires && npm run uglify"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.1",
+    "babel-cli": "^6.24.1",
+    "babel-preset-env": "^1.5.2",
     "browser-sync": "^2.18.12",
+    "browserify": "^14.4.0",
     "node-sass": "^4.5.3",
     "onchange": "^3.2.1",
     "parallelshell": "^2.0.0",

@@ -1,3 +1,14 @@
+
+
+var fluid = require('./fluid.js');
+var settings = require('./settings.js');
+var element = require('./element.js');
+var type = require('./type.js');
+
+var Particle = require('./particle.js');
+
+
+
 /**
  * Mouse events and particles drawing
  * @constructor
@@ -53,7 +64,7 @@ Mouse.prototype.process = function(){
         if(this.increaseValueX){
             for (var drawX = this.previousX; drawX < this.currentX; drawX+=5){ //For each position until current mouse x
                 if(this.out){
-                    if(this.outXposition < fluid.width){ //if mouse go out of the canvas
+                    if(this.outXposition < settings.width){ //if mouse go out of the canvas
                         this.currentX = 0;
                     }
                 }
@@ -62,8 +73,8 @@ Mouse.prototype.process = function(){
         } else{
             for (var drawX = this.previousX; drawX > this.currentX; drawX-=5){
                 if(this.out){
-                    if(this.outXposition > fluid.width){
-                        this.currentX = fluid.width;
+                    if(this.outXposition > settings.width){
+                        this.currentX = settings.width;
                     }
                 }
                 mouse.drawXMissingParticles(drawX);
@@ -78,7 +89,7 @@ Mouse.prototype.process = function(){
         if(this.increaseValueY){
             for (var drawY = this.previousY; drawY < this.currentY; drawY+=5){ //For each position until current mouse x
                 if(this.out){
-                    if(this.outYposition < fluid.height){ //if mouse go out of the canvas
+                    if(this.outYposition < settings.height){ //if mouse go out of the canvas
                         this.currentY = 0;
                     }
                 }
@@ -87,8 +98,8 @@ Mouse.prototype.process = function(){
         } else{
             for (var drawY = this.previousY; drawY > this.currentY; drawY-=5){
                 if(this.out){
-                    if(this.outYposition > fluid.height){
-                        this.currentY = fluid.height;
+                    if(this.outYposition > settings.height){
+                        this.currentY = settings.height;
                     }
                 }
                 mouse.drawYMissingParticles(drawY);
@@ -107,7 +118,7 @@ Mouse.prototype.process = function(){
 
             //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
             if(settings.elementTypeId == type.rigid.id){
-                fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(settings.elementTypeId, this.x, this.y));
+                fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(fluid, settings.elementTypeId, this.x, this.y));
 
                 fluid.groupParticles[fluid.groupLength - 1].subParticles[fluid.groupParticles[fluid.groupLength - 1]
                     .subParticles.length - 1].groupParentId = fluid.groupParticles[fluid.groupLength - 1].id;
@@ -139,7 +150,7 @@ Mouse.prototype.drawXMissingParticles = function(drawX){
 
     //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
     if(settings.elementTypeId == type.rigid.id){
-        fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(settings.elementTypeId, drawX, this.previousY));
+        fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(fluid, settings.elementTypeId, drawX, this.previousY));
 
         fluid.groupParticles[fluid.groupLength - 1].subParticles[fluid.groupParticles[fluid.groupLength - 1]
             .subParticles.length - 1].groupParentId = fluid.groupParticles[fluid.groupLength - 1].id;
@@ -168,7 +179,7 @@ Mouse.prototype.drawYMissingParticles = function(drawY){
 
     //If the selected element is the rigid element (Group formation - maybe to pass in parameter in future if we have several group)
     if(settings.elementTypeId == type.rigid.id){
-        fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(settings.elementTypeId, this.previousX, drawY));
+        fluid.groupParticles[fluid.groupLength - 1].subParticles.push(new Particle(fluid, settings.elementTypeId, this.previousX, drawY));
 
         fluid.groupParticles[fluid.groupLength - 1].subParticles[fluid.groupParticles[fluid.groupLength - 1]
             .subParticles.length - 1].groupParentId = fluid.groupParticles[fluid.groupLength - 1].id;
@@ -199,4 +210,6 @@ Mouse.prototype.testReplaceParticles = function(mouseX, mouseY){
 
 
 var mouse = new Mouse();
+module.exports = mouse;
 mouse.init();
+

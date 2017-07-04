@@ -1,3 +1,9 @@
+
+var settings = require('./settings.js');
+var type = require('./type.js');
+var element = require('./element.js');
+
+
 /**
  * Create Particle
  * @param elementTypeId
@@ -7,7 +13,7 @@
  * @param py
  * @constructor
  */
-var GroupParticle = function(elementTypeId, x, y, px, py){
+var GroupParticle = function(fluid, elementTypeId, x, y, px, py){
     this.id = fluid.idGroupParticlesCreated += 1;
     this.elementTypeId = elementTypeId; //Type of the particle (water, fire, ...)
     this.x = x;
@@ -23,7 +29,6 @@ var GroupParticle = function(elementTypeId, x, y, px, py){
     this.convertedFromLiquidFuel = false;
 
 
-    this.pass = false;
     this.particleLimitInGroup = null;
     this.previousParticleLimitInGroup = null;
 
@@ -56,9 +61,10 @@ var GroupParticle = function(elementTypeId, x, y, px, py){
 /**
  * Handle the gravity
  */
-GroupParticle.prototype.first_process = function () {
+GroupParticle.prototype.first_process = function (fluid) {
     var that = this;
 
+    this.fluid = fluid;
 
     this.prevVy = this.vy;
 
@@ -86,22 +92,22 @@ GroupParticle.prototype.first_process = function () {
         /**
          * Rebound process
          */
-        if (that.x >= fluid.width - fluid.limit) {
+        if (that.x >= settings.width - that.fluid.limit) {
             that.vx = -that.vx * that.damping;
-            that.x = fluid.width - fluid.limit;
+            that.x = settings.width - that.fluid.limit;
 
-        } else if (that.x - fluid.limit <= 0) {
+        } else if (that.x - that.fluid.limit <= 0) {
             that.vx = -that.vx * that.damping;
-            that.x = fluid.limit;
+            that.x = that.fluid.limit;
         }
 
-        if (that.y >= fluid.height - fluid.limit) {
+        if (that.y >= settings.height - that.fluid.limit) {
             that.vy = -that.vy * that.damping;
-            that.y = fluid.height - fluid.limit;
+            that.y = settings.height - that.fluid.limit;
 
-        } else if (that.y - fluid.limit <= 0) {
+        } else if (that.y - that.fluid.limit <= 0) {
             that.vy = -that.vy * that.damping;
-            that.y = fluid.limit;
+            that.y = that.fluid.limit;
         }
 
         that.vy += that.gravityY;
@@ -136,10 +142,10 @@ GroupParticle.prototype.first_process = function () {
                 }
 
                 //Calculate new coordinates
-                var rotatedX = ((particle.x - that.x) * Math.cos(fluid.degreesToRadians(that.angle))) -
-                    ((particle.y - that.y) * Math.sin(fluid.degreesToRadians(that.angle))) + that.x;
-                var rotatedY = ((particle.x - that.x) * Math.sin(fluid.degreesToRadians(that.angle))) +
-                    ((particle.y - that.y) * Math.cos(fluid.degreesToRadians(that.angle))) + that.y;
+                var rotatedX = ((particle.x - that.x) * Math.cos(settings.degreesToRadians(that.angle))) -
+                    ((particle.y - that.y) * Math.sin(settings.degreesToRadians(that.angle))) + that.x;
+                var rotatedY = ((particle.x - that.x) * Math.sin(settings.degreesToRadians(that.angle))) +
+                    ((particle.y - that.y) * Math.cos(settings.degreesToRadians(that.angle))) + that.y;
 
                 particle.x = rotatedX;
                 particle.y = rotatedY;
@@ -156,13 +162,12 @@ GroupParticle.prototype.first_process = function () {
 };
 
 
-GroupParticle.prototype.second_process = function () {
+GroupParticle.prototype.second_process = function (fluid) {
     this.m = 0;
-    // this.draw();
-
+    this.fluid = fluid;
 
     this.subParticles.forEach(function(particle){
-        particle.draw();
+        particle.draw(fluid);
     });
 };
 
@@ -238,12 +243,12 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
                 for (var i = currentPosition; i < that.subParticles.length - 1; i++) {
 
                     //If collide, we changed the new particle collision reference
-                    if (particle.x < fluid.limit || particle.x > fluid.width - fluid.limit) {
+                    if (particle.x < that.fluid.limit || particle.x > settings.width - that.fluid.limit) {
                         that.particleLimitInGroup = particle;
                         particleHasChanged = true;
                         break;
                     }
-                    if ((particle.y < fluid.limit) || (particle.y > fluid.height - fluid.limit)) {
+                    if ((particle.y < that.fluid.limit) || (particle.y > settings.height - that.fluid.limit)) {
                         that.particleLimitInGroup = particle;
                         particleHasChanged = true;
                         break;
@@ -266,18 +271,18 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
             /**
              * Test if the particle collide with a border
              */
-            if (particle.x < fluid.limit) {
+            if (particle.x < that.fluid.limit) {
                 that.limit = true;
                 that.particleLimitInGroup = particle;
-            } else if (particle.x > fluid.width - fluid.limit) {
+            } else if (particle.x > settings.width - that.fluid.limit) {
                 that.limit = true;
                 that.particleLimitInGroup = particle;
             }
 
-            if (particle.y < fluid.limit) {
+            if (particle.y < that.fluid.limit) {
                 that.limit = true;
                 that.particleLimitInGroup = particle;
-            } else if (particle.y > fluid.height - fluid.limit) {
+            } else if (particle.y > settings.height - that.fluid.limit) {
                 that.limit = true;
                 that.particleLimitInGroup = particle;
 
@@ -325,13 +330,14 @@ GroupParticle.prototype.calculateXYParticlesFromLeader = function(leader, subPar
 
 
 GroupParticle.prototype.draw = function () {
-
     var size = element.radius * 2;
 
-    fluid.meta_ctx.drawImage(
+    this.fluid.meta_ctx.drawImage(
         element.textures[this.elementTypeId], //Draw the current type of the particle (water, fire, ...)
         this.x - element.radius,
         this.y - element.radius,
         size,
         size);
 };
+
+module.exports = GroupParticle;

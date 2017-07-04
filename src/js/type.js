@@ -28,4 +28,6 @@ Type.prototype.init = function(){
 
 
 var type = new Type();
+module.exports = type;
 type.init();
+

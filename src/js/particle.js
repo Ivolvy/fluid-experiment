@@ -1,3 +1,10 @@
+
+
+var settings = require('./settings.js');
+var type = require('./type.js');
+var element = require('./element.js');
+
+
 /**
  * Create Particle
  * @param elementTypeId
@@ -7,7 +14,7 @@
  * @param py
  * @constructor
  */
-var Particle = function(elementTypeId, x, y, px, py){
+var Particle = function(fluid, elementTypeId, x, y, px, py){
     this.id = fluid.particlesCreated += 1;
     this.groupParentId = null; //Useful to know the groupParent id if there is one
 
@@ -42,10 +49,10 @@ var Particle = function(elementTypeId, x, y, px, py){
 /**
  * Handle the gravity
  */
-Particle.prototype.first_process = function () {
+Particle.prototype.first_process = function (fluid) {
+    this.fluid = fluid;
 
-
-    var g = fluid.grid[Math.round(this.y / fluid.spacing) * fluid.num_x + Math.round(this.x / fluid.spacing)];
+    var g = this.fluid.grid[Math.round(this.y / this.fluid.spacing) * this.fluid.num_x + Math.round(this.x / this.fluid.spacing)];
 
     if (g){
         g.close[g.length++] = this;
@@ -75,12 +82,13 @@ Particle.prototype.first_process = function () {
 /**
  * Handle the behavior between particles
  */
-Particle.prototype.second_process = function () {
+Particle.prototype.second_process = function (fluid) {
+    this.fluid = fluid;
 
     this.m = 0; //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
 
 
-    fluid.groupParticles.forEach(function(groupParticle){
+    this.fluid.groupParticles.forEach(function(groupParticle){
         groupParticle.m = 0;
     });
 
@@ -89,8 +97,8 @@ Particle.prototype.second_process = function () {
     this.force = 0;
     this.force_b = 0;
 
-    var cell_x = Math.round(this.x / fluid.spacing);
-    var cell_y = Math.round(this.y / fluid.spacing);
+    var cell_x = Math.round(this.x / this.fluid.spacing);
+    var cell_y = Math.round(this.y / this.fluid.spacing);
     this.close = [];
     this.xDistance = 0;
     this.yDistance = 0;
@@ -99,7 +107,7 @@ Particle.prototype.second_process = function () {
 
     for (var x_off = -1; x_off < 2; x_off++) {
         for (var y_off = -1; y_off < 2; y_off++) {
-            var cell = fluid.grid[(cell_y + y_off) * fluid.num_x + (cell_x + x_off)];
+            var cell = this.fluid.grid[(cell_y + y_off) * this.fluid.num_x + (cell_x + x_off)];
 
             if (cell && cell.length) {
                 for (var a = 0, l = cell.length; a < l; a++) {
@@ -120,7 +128,7 @@ Particle.prototype.second_process = function () {
     }
 
 
-    this.draw();
+    this.draw(fluid);
 };
 
 /**
@@ -190,19 +198,19 @@ Particle.prototype.addForcesToParticles = function(){
                 //If the particle doesn't belong to the same group
                 if(this.groupParentId != neighbor.groupParentId){
 
-   /*                 console.log(fluid.groupParticles);
+   /*                 console.log(this.fluid.groupParticles);
                     console.log(this.groupParentId);
 
                     //If the groupParticle with the given id exists
-                    for(var i=0 ; i < fluid.groupParticles.length; i++){  //todo to get the real position of particles in group
-                        if(fluid.groupParticles[i].id == this.groupParentId) {
-                            fluid.groupParticles[i].x -= dx;
-                            fluid.groupParticles[i].y -= dy;
+                    for(var i=0 ; i < this.fluid.groupParticles.length; i++){  //todo to get the real position of particles in group
+                        if(this.fluid.groupParticles[i].id == this.groupParentId) {
+                            this.fluid.groupParticles[i].x -= dx;
+                            this.fluid.groupParticles[i].y -= dy;
                         }
                     }
 */
-                    fluid.groupParticles[this.groupParentId-1].x -= dx;
-                    fluid.groupParticles[this.groupParentId-1].y -= dy;
+                    this.fluid.groupParticles[this.groupParentId-1].x -= dx;
+                    this.fluid.groupParticles[this.groupParentId-1].y -= dy;
 
                 }
 
@@ -216,37 +224,37 @@ Particle.prototype.addForcesToParticles = function(){
  */
 Particle.prototype.checkBorderLimits = function(){
     //Check if the particles are on the borders of the canvas
-    if (this.x < fluid.limit) {
+    if (this.x < this.fluid.limit) {
         if (settings.outflow) {
             if(this.x < 0) {
-                fluid.destroyParticle(this);
+                this.fluid.destroyParticle(this);
             }
         } else{
-            this.x = fluid.limit;
+            this.x = this.fluid.limit;
         }
-    } else if (this.x > fluid.width - fluid.limit) {
+    } else if (this.x > settings.width - this.fluid.limit) {
         if (settings.outflow) {
-            if(this.x > fluid.width) { //Useful to not make the particles disappears instantly at extremes
-                fluid.destroyParticle(this);
+            if(this.x > settings.width) { //Useful to not make the particles disappears instantly at extremes
+                this.fluid.destroyParticle(this);
             }
         } else{
-            this.x = fluid.width - fluid.limit;
+            this.x = settings.width - this.fluid.limit;
         }
     }
 
-    if (this.y < fluid.limit) {
+    if (this.y < this.fluid.limit) {
         if (settings.outflow) {
-            fluid.destroyParticle(this);
+            this.fluid.destroyParticle(this);
         } else{
-            this.y = fluid.limit;
+            this.y = this.fluid.limit;
         }
-    } else if (this.y > fluid.height - fluid.limit) {
+    } else if (this.y > settings.height - this.fluid.limit) {
         if (settings.outflow) {
-            if(this.y > fluid.height){
-                fluid.destroyParticle(this);
+            if(this.y > settings.height){
+                this.fluid.destroyParticle(this);
             }
         } else{
-            this.y = fluid.height - fluid.limit;
+            this.y = settings.height - this.fluid.limit;
         }
     }
 };
@@ -262,7 +270,7 @@ Particle.prototype.processForcesOnParticle = function(closeParticle){
     this.yDistance = closeParticle.y - this.y;
     this.distance = Math.sqrt(Math.pow(this.xDistance, 2) + Math.pow(this.yDistance, 2)); //Distance between two points: sqrt((xb-xa)² + (yb-ya)²)
 
-    if (this.distance < fluid.spacing) {
+    if (this.distance < this.fluid.spacing) {
 
         this.processForceForElement(closeParticle);
 
@@ -290,7 +298,7 @@ Particle.prototype.processForceForElement = function(closeParticle){
 
 
     if(closeParticle != this && this.elementTypeId != type.rigid.id && closeParticle.elementTypeId == type.rigid.id){
-        this.m = 1 - (this.distance / fluid.spacing);
+        this.m = 1 - (this.distance / this.fluid.spacing);
         this.force += 1;
         this.force_b += 1;
     }
@@ -307,7 +315,7 @@ Particle.prototype.processForceForElement = function(closeParticle){
 
     //If the current particle is not a wall and the neighbor particle is a wall
     else if(closeParticle != this && this.elementTypeId != type.wall.id && closeParticle.elementTypeId == type.wall.id){
-        this.m = 1 - (this.distance / fluid.spacing);
+        this.m = 1 - (this.distance / this.fluid.spacing);
         this.force += 1;
         this.force_b += 1;
     }
@@ -324,7 +332,7 @@ Particle.prototype.processForceForElement = function(closeParticle){
         this.force_b = 0.1;
     }
     else if (closeParticle != this && (closeParticle.elementTypeId != type.wall.id)) {
-        this.m = 1 - (this.distance / fluid.spacing);
+        this.m = 1 - (this.distance / this.fluid.spacing);
         this.force += Math.pow(this.m, 2);
         this.force_b += Math.pow(this.m, 3) / 2;
     }
@@ -346,7 +354,7 @@ Particle.prototype.processWaterAndFire = function(neighbor){
             (this.y + settings.maxDistanceForChemistry) >= neighbor.y && (this.y - settings.maxDistanceForChemistry) <= neighbor.y){
 
 
-            this.launchTimerToChemistryFromWaterAndFire(this, neighbor);
+            this.launchTimerToChemistryFromWaterAndFire(this, neighbor, this.fluid);
             this.willBeDestroyed = true; //Set to true in order to not pass twice in destroy function
         }
     }
@@ -412,16 +420,18 @@ Particle.prototype.processFireAndLiquidFuel = function(neighbor){
  * @param neighbor
  */
 Particle.prototype.launchTimerToChemistryFromWaterAndFire = function(currentParticle, neighbor){
+    var that = this;
+
     setTimeout(function(){
         if(neighbor.elementTypeId == type.water.id) { //Double security
             var randomChemistry = Math.floor((Math.random() * 5) + 1); //Between 1 and 3 options
 
             if (randomChemistry == 1) {
-                element.createGas(currentParticle, neighbor);
+                element.createGas(currentParticle, neighbor, that.fluid);
             } else if (randomChemistry == 2) {
-                element.createLiquidFuel(currentParticle, neighbor);
+                element.createLiquidFuel(currentParticle, neighbor, that.fluid);
             } else if(!currentParticle.convertedFromLiquidFuel){
-                fluid.destroyParticle(currentParticle);
+                that.fluid.destroyParticle(currentParticle);
             }
         }
     }, 200);
@@ -433,16 +443,18 @@ Particle.prototype.launchTimerToChemistryFromWaterAndFire = function(currentPart
  * @param neighbor
  */
 Particle.prototype.launchTimerToChemistryFromFireAndLiquidFuel = function(currentParticle, neighbor){
+    var that = this;
+
     setTimeout(function(){
         if(neighbor.elementTypeId == type.liquidFuel.id) { //Double security
             neighbor.elementTypeId = type.fire.id;
-            element.processFire(neighbor);
+            element.processFire(neighbor, that.fluid);
         }
     }, 200);
 };
 
 
-Particle.prototype.draw = function () {
+Particle.prototype.draw = function (fluid) {
     var size = element.radius * 2;
 
     fluid.meta_ctx.drawImage(
@@ -452,3 +464,5 @@ Particle.prototype.draw = function () {
         size,
         size);
 };
+
+module.exports = Particle;

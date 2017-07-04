@@ -1,3 +1,7 @@
+
+var type = require('./type.js');
+
+
 /**
  * The element himself (textures, shape, ...)
  * @constructor
@@ -47,7 +51,7 @@ Element.prototype.createElement = function(elementType){
  * Delete randomly fire element
  * @param element
  */
-Element.prototype.processFire = function(element){
+Element.prototype.processFire = function(element, fluid){
     var randomTimer = Math.floor((Math.random() * 12000) + 1000); //Between 1 and 12 seconds
 
     setTimeout(function(){
@@ -61,7 +65,7 @@ Element.prototype.processFire = function(element){
  * @param currentParticle
  * @param neighbor
  */
-Element.prototype.createGas = function(currentParticle, neighbor){
+Element.prototype.createGas = function(currentParticle, neighbor, fluid){
     neighbor.elementTypeId = type.gas.id;
     neighbor.gravityY = -0.5;
     fluid.destroyParticle(currentParticle);
@@ -72,7 +76,7 @@ Element.prototype.createGas = function(currentParticle, neighbor){
  * @param currentParticle
  * @param neighbor
  */
-Element.prototype.createLiquidFuel = function(currentParticle, neighbor){
+Element.prototype.createLiquidFuel = function(currentParticle, neighbor, fluid){
     neighbor.elementTypeId = type.liquidFuel.id;
     fluid.destroyParticle(currentParticle);
 };
@@ -90,3 +94,5 @@ Element.prototype.preloadAllElements = function(){
 
 var element = new Element();
 element.init();
+
+module.exports = element;

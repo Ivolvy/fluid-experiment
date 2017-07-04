@@ -128,9 +128,7 @@ App.prototype.calculateAndDisplayParticles = function(){
             if(fluid.groupParticles[y]){
                 fluid.groupParticles[y].first_process(fluid);
 
-                fluid.groupParticles[y].subParticles.forEach(function(particle){
-                    particle.first_process(fluid);
-                });
+                fluid.groupParticles[y].subParticles.forEach(particle => particle.first_process(fluid));
             }
         }
     }
@@ -148,9 +146,7 @@ App.prototype.calculateAndDisplayParticles = function(){
             fluid.groupParticles[y].second_process(fluid);
 
             //Check all subParticles of each groupParticles
-            fluid.groupParticles[y].subParticles.forEach(function(particle){
-                particle.second_process(fluid);
-            });
+            fluid.groupParticles[y].subParticles.forEach(particle => particle.second_process(fluid));
         }
     }
 };
@@ -194,7 +190,6 @@ App.prototype.run = function () {
                 }
             }
         }
-
     } else{
         mouse.previousX = mouse.x;
         mouse.previousY = mouse.y;

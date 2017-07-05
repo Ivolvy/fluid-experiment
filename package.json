@@ -11,7 +11,7 @@
     "watch:css": "onchange 'src/scss/*.scss' -- npm run build:css",
     "watch:js": "onchange 'src/js/*.js' -- npm run loadProject",
     "postinstall": "npm run build:css && npm run uglify",
-    "start": "npm run loadProject && parallelshell 'npm run serve' 'npm run watch:css' 'npm run watch:bundle' 'npm run watch:js'",
+    "start": "npm run loadProject && parallelshell 'npm run serve' 'npm run watch:css' 'npm run watch:js'",
     "buildBabel": "babel 'dist/js/bundle.js' --out-file 'dist/js/babelify.js'",
     "browserifyRequires": "mkdir -p dist/js && browserify 'src/js/app.js' > 'dist/js/bundle.js'",
     "loadProject": "npm run browserifyRequires && npm run buildBabel && npm run uglify"

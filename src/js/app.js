@@ -81,8 +81,8 @@ class App {
      * @param x
      * @param y
      */
-    createGroupParticles(elementTypeId,x, y){
-        this.currentGroupParticle =  new GroupParticle(fluid, type.rigid.id, x, y);
+    createGroupParticles(elementTypeId, x, y){
+        this.currentGroupParticle =  new GroupParticle(fluid, elementTypeId, x, y);
 
         fluid.groupParticles.push(this.currentGroupParticle);
         fluid.groupLength = fluid.groupParticles.length;

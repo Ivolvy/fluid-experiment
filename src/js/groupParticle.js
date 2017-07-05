@@ -8,6 +8,7 @@ var element = require('./element.js');
 class GroupParticle{
     /**
      * Create Particle
+     * @param fluid
      * @param elementTypeId
      * @param x
      * @param y
@@ -64,9 +65,8 @@ class GroupParticle{
      * Handle the gravity
      */
     first_process(fluid){
-        var that = this;
-
         this.fluid = fluid;
+        var that = this;
 
         this.prevVy = this.vy;
 
@@ -162,8 +162,8 @@ class GroupParticle{
     }
 
     second_process(fluid){
-        this.m = 0;
         this.fluid = fluid;
+        this.m = 0;
 
         this.subParticles.forEach(particle => particle.draw(fluid));
     }
@@ -253,7 +253,7 @@ class GroupParticle{
                     //If there is a new collide particle
                     if(particleHasChanged){
                         //If the lead particle doesn't move and collide and the current particle collide, stop the rotation
-                        if(this.prevVy == this.vy && that.isCollide && particle.isCollide){
+                        if(/*that.prevVy == that.vy &&*/ that.isCollide && particle.isCollide){
                             that.angle = 0;
                         }
                     } else{
@@ -321,10 +321,10 @@ class GroupParticle{
         });
     }
 
-    draw(){
+    draw(fluid){
         var size = element.radius * 2;
 
-        this.fluid.meta_ctx.drawImage(
+        fluid.meta_ctx.drawImage(
             element.textures[this.elementTypeId], //Draw the current type of the particle (water, fire, ...)
             this.x - element.radius,
             this.y - element.radius,

@@ -125,7 +125,7 @@ GroupParticle.prototype.first_process = function (fluid) {
          * Rotation process
          */
         if(that.activeRotation == true){
-            that.subParticles.forEach(function(particle){
+            that.subParticles.forEach(particle => {
 
                 //x rotation = cos(θ)⋅(x−cx) − sin(θ)⋅(y−cy)+cx ; θ in radians
                 //y rotation = sin(θ)⋅(x−cx) + cos(θ)⋅(y−cy)+cy
@@ -166,9 +166,7 @@ GroupParticle.prototype.second_process = function (fluid) {
     this.m = 0;
     this.fluid = fluid;
 
-    this.subParticles.forEach(function(particle){
-        particle.draw(fluid);
-    });
+    this.subParticles.forEach(particle => particle.draw(fluid));
 };
 
 /**
@@ -177,7 +175,7 @@ GroupParticle.prototype.second_process = function (fluid) {
 GroupParticle.prototype.moveSubParticles = function(){
     var that = this;
 
-    this.subParticles.forEach(function(particle){
+    this.subParticles.forEach(particle => {
         particle.vx = that.vx;
         particle.vy = that.vy;
         particle.px = particle.x;
@@ -233,14 +231,14 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
 
     if(!settings.outflow){
 
-        this.subParticles.forEach(function(particle, currentPosition){
+        this.subParticles.forEach((particle, currentPosition) => {
             var particleHasChanged = false;
 
             //If a particle collided with a border
             if(that.limit){
 
                 //Check for each next particles in the tab if they collide or not with a border
-                for (var i = currentPosition; i < that.subParticles.length - 1; i++) {
+                for (let i = currentPosition; i < that.subParticles.length - 1; i++) {
 
                     //If collide, we changed the new particle collision reference
                     if (particle.x < that.fluid.limit || particle.x > settings.width - that.fluid.limit) {
@@ -321,7 +319,7 @@ GroupParticle.prototype.checkIfSubParticleCollideBorder = function(){
  * Useful to make all particles follow the leader when the leader change his position
  */
 GroupParticle.prototype.calculateXYParticlesFromLeader = function(leader, subParticles){
-    subParticles.forEach(function(particle){
+    subParticles.forEach(particle => {
         particle.xDiffFromLead = leader.x - particle.x;
         particle.yDiffFromLead = leader.y - particle.y;
     });

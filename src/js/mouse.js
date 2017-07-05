@@ -62,7 +62,7 @@ Mouse.prototype.process = function(){
 
     if(this.xDiff > 10){
         if(this.increaseValueX){
-            for (var drawX = this.previousX; drawX < this.currentX; drawX+=5){ //For each position until current mouse x
+            for (let drawX = this.previousX; drawX < this.currentX; drawX+=5){ //For each position until current mouse x
                 if(this.out){
                     if(this.outXposition < settings.width){ //if mouse go out of the canvas
                         this.currentX = 0;
@@ -71,7 +71,7 @@ Mouse.prototype.process = function(){
                 mouse.drawXMissingParticles(drawX);
             }
         } else{
-            for (var drawX = this.previousX; drawX > this.currentX; drawX-=5){
+            for (let drawX = this.previousX; drawX > this.currentX; drawX-=5){
                 if(this.out){
                     if(this.outXposition > settings.width){
                         this.currentX = settings.width;
@@ -87,7 +87,7 @@ Mouse.prototype.process = function(){
     }
     else if(this.yDiff > 10){
         if(this.increaseValueY){
-            for (var drawY = this.previousY; drawY < this.currentY; drawY+=5){ //For each position until current mouse x
+            for (let drawY = this.previousY; drawY < this.currentY; drawY+=5){ //For each position until current mouse x
                 if(this.out){
                     if(this.outYposition < settings.height){ //if mouse go out of the canvas
                         this.currentY = 0;
@@ -96,7 +96,7 @@ Mouse.prototype.process = function(){
                 mouse.drawYMissingParticles(drawY);
             }
         } else{
-            for (var drawY = this.previousY; drawY > this.currentY; drawY-=5){
+            for (let drawY = this.previousY; drawY > this.currentY; drawY-=5){
                 if(this.out){
                     if(this.outYposition > settings.height){
                         this.currentY = settings.height;
@@ -198,7 +198,7 @@ Mouse.prototype.drawYMissingParticles = function(drawY){
  * Replace below particles by those who are drawn above
  */
 Mouse.prototype.testReplaceParticles = function(mouseX, mouseY){
-    for (var i = 0; i < fluid.num_particles; i++) {
+    for (let i = 0; i < fluid.num_particles; i++) {
         if(settings.elementTypeId != fluid.particles[i].elementTypeId) {
             if (((mouseX + element.radius) >= fluid.particles[i].x && (mouseX - element.radius) <= fluid.particles[i].x)
                 && ((mouseY + element.radius) >= fluid.particles[i].y && (mouseY - element.radius) <= fluid.particles[i].y)) {

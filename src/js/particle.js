@@ -88,9 +88,7 @@ Particle.prototype.second_process = function (fluid) {
     this.m = 0; //leading coefficient - give the direction and the steepness of the line: ((yb-ya)/(xb-xa))
 
 
-    this.fluid.groupParticles.forEach(function(groupParticle){
-        groupParticle.m = 0;
-    });
+    this.fluid.groupParticles.forEach(groupParticle => groupParticle.m = 0);
 
 
 
@@ -105,12 +103,12 @@ Particle.prototype.second_process = function (fluid) {
     this.distance = 0;
 
 
-    for (var x_off = -1; x_off < 2; x_off++) {
-        for (var y_off = -1; y_off < 2; y_off++) {
+    for (let x_off = -1; x_off < 2; x_off++) {
+        for (let y_off = -1; y_off < 2; y_off++) {
             var cell = this.fluid.grid[(cell_y + y_off) * this.fluid.num_x + (cell_x + x_off)];
 
             if (cell && cell.length) {
-                for (var a = 0, l = cell.length; a < l; a++) {
+                for (let a = 0, l = cell.length; a < l; a++) {
                     var closeParticle = cell.close[a];
 
                     this.processForcesOnParticle(closeParticle);
@@ -155,7 +153,7 @@ Particle.prototype.addForcesToParticles = function(){
 
 
 
-        for (var i = 0; i < this.close.length; i++) {
+        for (let i = 0; i < this.close.length; i++) {
 
             var neighbor = this.close[i];
 
@@ -202,7 +200,7 @@ Particle.prototype.addForcesToParticles = function(){
                     console.log(this.groupParentId);
 
                     //If the groupParticle with the given id exists
-                    for(var i=0 ; i < this.fluid.groupParticles.length; i++){  //todo to get the real position of particles in group
+                    for(let i=0 ; i < this.fluid.groupParticles.length; i++){  //todo to get the real position of particles in group
                         if(this.fluid.groupParticles[i].id == this.groupParentId) {
                             this.fluid.groupParticles[i].x -= dx;
                             this.fluid.groupParticles[i].y -= dy;
@@ -383,9 +381,7 @@ Particle.prototype.testEligibilityToFire = function(neighbor, increment){
         //Test if there is less ... water neighbor
         if(this.hasWaterNeighbor < settings.maxWaterAroundToTransformInFire){
             //And transform stocked liquidFuel in Fire
-            this.stockLiquidFire.forEach(function(element){
-                that.processFireAndLiquidFuel(element);
-            });
+            this.stockLiquidFire.forEach(element => that.processFireAndLiquidFuel(element));
 
         }
     }
@@ -445,7 +441,7 @@ Particle.prototype.launchTimerToChemistryFromWaterAndFire = function(currentPart
 Particle.prototype.launchTimerToChemistryFromFireAndLiquidFuel = function(currentParticle, neighbor){
     var that = this;
 
-    setTimeout(function(){
+    setTimeout(() => {
         if(neighbor.elementTypeId == type.liquidFuel.id) { //Double security
             neighbor.elementTypeId = type.fire.id;
             element.processFire(neighbor, that.fluid);

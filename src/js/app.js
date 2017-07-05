@@ -6,6 +6,7 @@ var element = require('./element.js');
 var events = require('./events.js');
 var settings = require('./settings.js');
 var type = require('./type.js');
+var Particle = require('./particle.js');
 var GroupParticle = require('./groupParticle.js');
 
 
@@ -47,7 +48,7 @@ App.prototype.process_image = function() {
     var imageData = fluid.meta_ctx.getImageData(0, 0, settings.width, settings.height);
     var pix = imageData.data;
 
-    for (var i = 0, n = pix.length; i < n; i += 4) {
+    for (let i = 0, n = pix.length; i < n; i += 4) {
         (pix[i + 3] < that.threshold) && (pix[i + 3] /= 6);
     }
 
@@ -158,7 +159,7 @@ App.prototype.run = function () {
     //var time = new Date().getTime();
     fluid.meta_ctx.clearRect(0, 0, settings.width, settings.height);
 
-    for (var i = 0, l = fluid.num_x * fluid.num_y; i < l; i++){
+    for (let i = 0, l = fluid.num_x * fluid.num_y; i < l; i++){
         fluid.grid[i].length = 0;
     }
 
@@ -183,7 +184,7 @@ App.prototype.run = function () {
 
         //Delete particles when we click on them
         if(settings.wipe) {
-            for (var i = 0; i < fluid.num_particles; i++) {
+            for (let i = 0; i < fluid.num_particles; i++) {
                 if (((mouse.x + element.radius) >= fluid.particles[i].x && (mouse.x - element.radius) <= fluid.particles[i].x)
                     && ((mouse.y + element.radius) >= fluid.particles[i].y && (mouse.y - element.radius) <= fluid.particles[i].y)) {
                     fluid.destroyParticle(fluid.particles[i]);
@@ -231,7 +232,7 @@ App.prototype.init = function(canvas, w, h){
     fluid.num_y = Math.round(settings.height / fluid.spacing) + 1;
 
 
-    for (var i = 0; i < fluid.num_x * fluid.num_y; i++) {
+    for (let i = 0; i < fluid.num_x * fluid.num_y; i++) {
         fluid.grid[i] = {
             length: 0,
             close: []

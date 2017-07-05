@@ -30,9 +30,7 @@ var ElementButton = function(elementName, text, associatedElement, isDefault){
     this.button.appendChild(this.text);
 
 
-    this.button.addEventListener("click", function(){
-        that.testAssociatedElement(this, associatedElement);
-    }, false);
+    this.button.addEventListener("click", evt => that.testAssociatedElement(evt.currentTarget, associatedElement), false);
 
 
     this.buttonsDiv.appendChild(this.button);
@@ -62,7 +60,7 @@ ElementButton.prototype.testAssociatedElement = function(buttonEl, associatedEle
 ElementButton.prototype.resetButtons = function(){
     var elements = document.getElementsByClassName("active");
 
-    for (var i = 0; i < elements.length; i++) {
+    for (let i = 0; i < elements.length; i++) {
         elements[i].classList.remove("active");
     }
 

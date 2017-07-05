@@ -60,7 +60,7 @@ Fluid.prototype.destroyParticle = function(obj) {
     var that = this;
 
     //Remove only the particle with his id
-    for(var i=0 ; i < that.particles.length; i++){
+    for(let i=0 ; i < that.particles.length; i++){
         if(that.particles[i].id == obj.id) {
             that.particles.splice(i, 1);
         }

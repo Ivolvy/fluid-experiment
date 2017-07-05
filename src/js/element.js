@@ -54,9 +54,7 @@ Element.prototype.createElement = function(elementType){
 Element.prototype.processFire = function(element, fluid){
     var randomTimer = Math.floor((Math.random() * 12000) + 1000); //Between 1 and 12 seconds
 
-    setTimeout(function(){
-        fluid.destroyParticle(element);
-    }, randomTimer);
+    setTimeout(() => fluid.destroyParticle(element), randomTimer);
 
 };
 
